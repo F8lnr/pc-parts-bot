@@ -35,7 +35,6 @@
             overflow-x: hidden;
         }
 
-        /* خلفية شبكة */
         body::before {
             content: '';
             position: fixed;
@@ -48,7 +47,6 @@
             pointer-events: none;
         }
 
-        /* هالة خضراء */
         body::after {
             content: '';
             position: fixed;
@@ -68,7 +66,6 @@
             z-index: 1;
         }
 
-        /* الهيدر */
         .header {
             text-align: center;
             margin-bottom: 32px;
@@ -95,9 +92,7 @@
             line-height: 1.3;
         }
 
-        .header h1 span {
-            color: var(--green);
-        }
+        .header h1 span { color: var(--green); }
 
         .header p {
             color: var(--muted);
@@ -105,7 +100,6 @@
             margin-top: 8px;
         }
 
-        /* البطاقات */
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -136,19 +130,11 @@
             display: block;
         }
 
-        /* حقل API Key */
-        .api-key-row {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
+        .search-wrap { position: relative; }
 
-        .input-wrap {
-            position: relative;
-            flex: 1;
-        }
+        #query { padding-left: 44px; font-size: 15px; }
 
-        input[type="text"], input[type="password"] {
+        input[type="text"] {
             width: 100%;
             background: var(--bg);
             border: 1px solid var(--border);
@@ -166,29 +152,6 @@
             box-shadow: 0 0 0 3px var(--green-glow);
         }
 
-        .btn-eye {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            background: none;
-            border: none;
-            color: var(--muted);
-            cursor: pointer;
-            font-size: 16px;
-            padding: 4px;
-        }
-
-        /* حقل البحث */
-        .search-wrap {
-            position: relative;
-        }
-
-        #query {
-            padding-left: 44px;
-            font-size: 15px;
-        }
-
         .search-icon {
             position: absolute;
             left: 14px;
@@ -199,7 +162,6 @@
             pointer-events: none;
         }
 
-        /* الاقتراحات */
         .suggestions-list {
             display: none;
             position: absolute;
@@ -227,19 +189,9 @@
         }
 
         .suggestion-item:last-child { border-bottom: none; }
+        .suggestion-item:hover { background: var(--green-dim); color: var(--green); }
+        .suggestion-item::before { content: '⌕'; color: var(--muted); font-size: 16px; }
 
-        .suggestion-item:hover {
-            background: var(--green-dim);
-            color: var(--green);
-        }
-
-        .suggestion-item::before {
-            content: '⌕';
-            color: var(--muted);
-            font-size: 16px;
-        }
-
-        /* الأزرار */
         .btn-primary {
             width: 100%;
             background: var(--green);
@@ -263,23 +215,6 @@
         .btn-primary:active { transform: scale(0.98); }
         .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        .btn-save {
-            background: var(--surface2);
-            border: 1px solid var(--border);
-            color: var(--green);
-            font-family: 'IBM Plex Sans Arabic', sans-serif;
-            font-size: 13px;
-            font-weight: 600;
-            padding: 10px 16px;
-            border-radius: 10px;
-            cursor: pointer;
-            white-space: nowrap;
-            transition: background 0.2s;
-        }
-
-        .btn-save:hover { background: var(--green-dim); }
-
-        /* رفع الصورة */
         .upload-area {
             border: 2px dashed var(--border);
             border-radius: 12px;
@@ -291,27 +226,12 @@
             transition: border-color 0.2s, background 0.2s;
         }
 
-        .upload-area:hover {
-            border-color: var(--green);
-            background: var(--green-glow);
-        }
-
+        .upload-area:hover { border-color: var(--green); background: var(--green-glow); }
         .upload-area .icon { font-size: 28px; margin-bottom: 6px; }
 
-        #status {
-            font-size: 12px;
-            color: var(--green);
-            margin-top: 6px;
-            min-height: 18px;
-        }
+        #status { font-size: 12px; color: var(--green); margin-top: 6px; min-height: 18px; }
 
-        /* فلاتر المتاجر */
-        .filter-row {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 4px;
-        }
+        .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 
         .filter-chip {
             background: var(--surface2);
@@ -331,7 +251,6 @@
             color: var(--green);
         }
 
-        /* النتائج */
         #results { margin-top: 4px; }
 
         .result-card {
@@ -348,40 +267,12 @@
         }
 
         .result-card:hover { border-color: #2a3d5a; }
-
-        .result-num {
-            font-size: 10px;
-            font-weight: 700;
-            color: var(--green);
-            letter-spacing: 1px;
-        }
-
-        .result-title {
-            font-size: 15px;
-            font-weight: 600;
-            color: #fff;
-            line-height: 1.4;
-        }
-
-        .result-snippet {
-            font-size: 13px;
-            color: var(--muted);
-            line-height: 1.6;
-        }
-
-        .result-footer {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 4px;
-        }
-
-        .result-source {
-            font-size: 11px;
-            color: #3a5070;
-            direction: ltr;
-        }
-
+        .result-num { font-size: 10px; font-weight: 700; color: var(--green); letter-spacing: 1px; }
+        .result-title { font-size: 15px; font-weight: 600; color: #fff; line-height: 1.4; text-align: right; }
+        .result-snippet { font-size: 13px; color: var(--muted); line-height: 1.6; text-align: right; }
+        .result-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+        .result-source { font-size: 11px; color: #3a5070; direction: ltr; }
+        
         .result-link {
             background: var(--green-dim);
             border: 1px solid var(--green);
@@ -396,17 +287,10 @@
 
         .result-link:hover { background: #00e67633; }
 
-        /* حالات الواجهة */
-        .state-box {
-            text-align: center;
-            padding: 40px 20px;
-            color: var(--muted);
-        }
-
+        .state-box { text-align: center; padding: 40px 20px; color: var(--muted); }
         .state-box .icon { font-size: 36px; margin-bottom: 12px; }
         .state-box p { font-size: 14px; line-height: 1.6; }
 
-        /* شريط التحميل */
         .loading-bar {
             height: 3px;
             background: var(--green);
@@ -416,28 +300,9 @@
             margin-bottom: 16px;
         }
 
-        /* الكاونتر */
-        .key-status {
-            font-size: 11px;
-            color: var(--green);
-            margin-top: 6px;
-            display: none;
-        }
-
-        /* أنيميشن */
-        @keyframes fadeDown {
-            from { opacity: 0; transform: translateY(-16px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeUp {
-            from { opacity: 0; transform: translateY(12px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes fadeDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .spinner {
             width: 18px; height: 18px;
@@ -445,12 +310,6 @@
             border-top-color: #000;
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
-        }
-
-        /* موبايل */
-        @media (max-width: 480px) {
-            .api-key-row { flex-direction: column; }
-            .btn-save { width: 100%; }
         }
     </style>
 </head>
@@ -460,22 +319,10 @@
         <div class="header">
             <div class="badge">🇸🇦 السوق السعودي</div>
             <h1>🖥️ بوت قطع <span>البي سي</span> والشاشات</h1>
-            <p>ابحث عن أي قطعة أو شاشة وشوف أسعارها من المتاجر السعودية</p>
+            <p>ابحث عن أي قطعة أو شاشة وشوف أسعارها من المتاجر السعودية مباشرة</p>
         </div>
 
-        <div class="card" style="animation-delay:0.1s">
-            <div class="card-title">إعداد Serper API Key</div>
-            <div class="api-key-row">
-                <div class="input-wrap" style="flex:1">
-                    <input type="password" id="apiKey" placeholder="أدخل API Key هنا...">
-                    <button class="btn-eye" onclick="toggleKey()" title="إظهار/إخفاء">👁</button>
-                </div>
-                <button class="btn-save" onclick="saveKey()">حفظ ✓</button>
-            </div>
-            <div class="key-status" id="keyStatus">✅ تم حفظ الـ Key بنجاح</div>
-        </div>
-
-        <div class="card" style="animation-delay:0.2s">
+        <div class="card">
             <div class="card-title">البحث عن قطعة أو شاشة</div>
             <div class="search-wrap">
                 <span class="search-icon">🔍</span>
@@ -501,7 +348,7 @@
             </button>
         </div>
 
-        <div class="card" style="animation-delay:0.3s">
+        <div class="card">
             <div class="card-title">رفع صورة القطعة (OCR)</div>
             <div class="upload-area" onclick="document.getElementById('imageFile').click()">
                 <div class="icon">📷</div>
@@ -511,7 +358,7 @@
             </div>
         </div>
 
-        <div class="card" style="animation-delay:0.4s">
+        <div class="card">
             <div class="card-title">النتائج</div>
             <div class="loading-bar" id="loadingBar"></div>
             <div id="results">
@@ -525,62 +372,17 @@
     </div>
 
     <script>
-        // ====== البيانات ======
         const pcPartsData = [
-            // معالجات إنتل
             "i3-12100F", "i5-12400F", "i5-12600K", "i5-13400F", "i5-13600K",
             "i7-12700K", "i7-13700K", "i7-14700K", "i9-13900K", "i9-14900K",
-            // معالجات AMD
             "Ryzen 5 5600", "Ryzen 5 5600X", "Ryzen 5 7600X",
             "Ryzen 7 5700X", "Ryzen 7 7700X", "Ryzen 7 7800X3D",
-            "Ryzen 9 7900X", "Ryzen 9 7950X",
-            // كروت NVIDIA
-            "RTX 3060", "RTX 3060 Ti", "RTX 3070", "RTX 3080",
-            "RTX 4060", "RTX 4060 Ti", "RTX 4070", "RTX 4070 Super",
-            "RTX 4070 Ti", "RTX 4080", "RTX 4080 Super", "RTX 4090",
-            // كروت AMD
-            "RX 6600", "RX 6700 XT", "RX 6800 XT", "RX 7600",
-            "RX 7700 XT", "RX 7800 XT", "RX 7900 XTX",
-            // شاشات
-            "شاشة OLED جيمنج", "شاشة Mini LED", "شاشة 4K 144Hz",
-            "شاشة 2K 165Hz", "شاشة 2K 180Hz", "شاشة 1080p 240Hz",
-            "شاشة Asus ROG", "شاشة Samsung Odyssey",
-            "شاشة LG UltraGear", "شاشة Dell G27",
-            "شاشة MSI MAG", "شاشة BenQ Zowie",
-            // SSD وذاكرة
-            "SSD 1TB NVMe", "SSD 2TB Samsung 990 Pro",
-            "SSD 1TB WD Black", "RAM 32GB DDR5 6000MHz",
-            "RAM 16GB DDR4 3200MHz", "RAM 64GB DDR5",
-            // لوحات أم
-            "B650 motherboard", "Z790 motherboard", "B760 motherboard",
-            // تبريد
-            "AIO 360mm", "Noctua NH-D15", "DeepCool AK620"
+            "RTX 3060", "RTX 4060", "RTX 4070 Super", "RTX 4080 Super", "RTX 4090",
+            "شاشة OLED جيمنج", "شاشة Mini LED", "شاشة 4K 144Hz", "شاشة 2K 180Hz",
+            "شاشة Asus ROG", "شاشة Samsung Odyssey", "شاشة LG UltraGear",
+            "SSD 1TB NVMe", "SSD 2TB Samsung 990 Pro", "RAM 32GB DDR5"
         ];
 
-        // ====== الـ API Key ======
-        function saveKey() {
-            const key = document.getElementById('apiKey').value.trim();
-            if (!key) return alert('أدخل الـ API Key أولاً');
-            localStorage.setItem('serper_key', key);
-            const status = document.getElementById('keyStatus');
-            status.style.display = 'block';
-            setTimeout(() => status.style.display = 'none', 3000);
-        }
-
-        function toggleKey() {
-            const input = document.getElementById('apiKey');
-            input.type = input.type === 'password' ? 'text' : 'password';
-        }
-
-        // تحميل الـ Key المحفوظ
-        window.addEventListener('load', () => {
-            const saved = localStorage.getItem('serper_key');
-            if (saved) {
-                document.getElementById('apiKey').value = saved;
-            }
-        });
-
-        // ====== الاقتراحات ======
         const queryInput = document.getElementById('query');
         const suggestionsDiv = document.getElementById('suggestions');
 
@@ -603,9 +405,7 @@
                     suggestionsDiv.appendChild(item);
                 });
                 suggestionsDiv.style.display = 'block';
-            } else {
-                suggestionsDiv.style.display = 'none';
-            }
+            } else { suggestionsDiv.style.display = 'none'; }
         });
 
         queryInput.addEventListener('keydown', e => {
@@ -616,7 +416,6 @@
             if (e.target !== queryInput) suggestionsDiv.style.display = 'none';
         });
 
-        // ====== فلاتر المتاجر ======
         let selectedSite = '';
         document.getElementById('filterRow').addEventListener('click', e => {
             const chip = e.target.closest('.filter-chip');
@@ -626,12 +425,8 @@
             selectedSite = chip.dataset.site;
         });
 
-        // ====== شريط التحميل ======
-        function setLoading(val) {
-            document.getElementById('loadingBar').style.width = val + '%';
-        }
+        function setLoading(val) { document.getElementById('loadingBar').style.width = val + '%'; }
 
-        // ====== البحث الرئيسي المتصل بـ Render ======
         async function performSearch() {
             const query = queryInput.value.trim();
             const resDiv = document.getElementById('results');
@@ -639,35 +434,25 @@
 
             if (!query) return;
 
-            // حالة التحميل داخل الواجهة
             btn.disabled = true;
             document.getElementById('btnText').innerText = 'جاري البحث...';
             document.getElementById('btnIcon').innerHTML = '<div class="spinner"></div>';
             resDiv.innerHTML = '';
             setLoading(30);
 
-            // بناء استعلام الفلاتر بشكل ذكي
             let searchQuery = `${query} سعر السعودية`;
             if (selectedSite) searchQuery += ` site:${selectedSite}`;
             else searchQuery += ' (extra.com OR jarir.com OR amazon.sa OR noon.com OR xcite.com)';
 
             try {
                 setLoading(60);
-                
-                // تم تعديل هذا الجزء ليتصل بالسيرفر حقك بدلاً من الـ API المباشر لتفادي الـ CORS وحفظ الأمان
                 const res = await fetch('/api/search', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        query: searchQuery 
-                    })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ query: searchQuery }) // إرسال الاستعلام النهائي الكامل للسيرفر
                 });
 
-                if (!res.ok) {
-                    throw new Error('حدث خطأ أثناء جلب البيانات من السيرفر');
-                }
+                if (!res.ok) throw new Error('حدث خطأ في استجابة السيرفر');
 
                 const data = await res.json();
                 setLoading(100);
@@ -681,7 +466,6 @@
                     items.forEach((item, i) => {
                         let domain = "متجر سعودي";
                         try { domain = new URL(item.link).hostname.replace('www.', ''); } catch(e){}
-                        
                         resDiv.innerHTML += `
                             <div class="result-card" style="animation-delay:${i * 0.05}s">
                                 <div class="result-num">نتيجة ${i + 1}</div>
@@ -694,9 +478,8 @@
                             </div>`;
                     });
                 }
-
             } catch (err) {
-                resDiv.innerHTML = `<div class="state-box"><div class="icon">⚠️</div><p>خطأ: ${err.message}<br><small>تأكد من أن سيرفر Render شغال وLive</small></p></div>`;
+                resDiv.innerHTML = `<div class="state-box"><div class="icon">⚠️</div><p>خطأ: ${err.message}<br><small>تأكد من تحديث كود server.js في GitHub</small></p></div>`;
             } finally {
                 btn.disabled = false;
                 document.getElementById('btnText').innerText = 'بحث عن القطعة';
@@ -705,7 +488,6 @@
             }
         }
 
-        // ====== OCR ======
         document.getElementById('imageFile').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -715,9 +497,7 @@
                 queryInput.value = text.trim().split('\n')[0]; 
                 document.getElementById('status').innerText = '✅ تم استخراج النص!';
                 performSearch();
-            } catch {
-                document.getElementById('status').innerText = '❌ فشل تحليل الصورة';
-            }
+            } catch { document.getElementById('status').innerText = '❌ فشل تحليل الصورة'; }
         });
     </script>
 </body>
