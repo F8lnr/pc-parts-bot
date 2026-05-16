@@ -133,7 +133,7 @@
         .score-badge.good  { background: #ffd60a15; border: 1px solid var(--yellow); color: var(--yellow); }
         .score-badge.bad   { background: #ff375715; border: 1px solid var(--red); color: var(--red); }
 
-        /* ====== أداء الألعاب ====== */
+        /* ====== أداء الألعاب المتطور ====== */
         .games-card { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; animation: fadeUp 0.4s ease both; }
         .games-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
         .game-row { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
@@ -185,7 +185,6 @@
         .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; animation: fadeUp 0.3s ease both; }
         .result-card:hover { border-color: #2a3d5a; }
         .result-num { font-size: 10px; font-weight: 700; color: var(--green); letter-spacing: 1px; display: flex; align-items: center; gap: 6px; }
-        .cheapest-badge { background: #ffd60a22; color: var(--yellow); border: 1px solid var(--yellow); padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: auto; }
         .result-title { font-size: 15px; font-weight: 600; color: #fff; line-height: 1.4; text-align: right; }
         .result-snippet { font-size: 13px; color: var(--muted); line-height: 1.6; text-align: right; }
         
@@ -317,7 +316,7 @@
     <div id="categoryCard" class="category-badge"></div>
 
     <div class="card">
-        <div class="card-title">نتائج البحث المفلترة (من الأرخص للأغلى)</div>
+        <div class="card-title">نتائج البحث</div>
         <div class="loading-bar" id="loadingBar"></div>
         <div id="results">
             <div class="state-box">
@@ -347,6 +346,7 @@ const pcPartsData = [
     "Power Supply 750W","Power Supply 850W","AIO 360mm","Noctua NH-D15"
 ];
 
+// ====== اقتراحات التجميعة الذكية (الفئات) ======
 const categorySuggestions = {
     'CPU': ["i5-13400F", "i7-14700K", "Ryzen 5 7600X", "Ryzen 7 7800X3D", "Ryzen 5 5600"],
     'GPU': ["RTX 4060", "RTX 4070 Super", "RTX 4080 Super", "RX 7800 XT", "RX 7900 XTX"],
@@ -557,6 +557,7 @@ function checkAnalyzeBtn() {
     analyzeBtn.disabled = Object.values(buildData).filter(v => v).length < 2;
 }
 
+// ====== التحليل ودقات الشاشة ======
 function analyzeBuild() {
     const compatCard = document.getElementById('compatCard');
     const gamesCard  = document.getElementById('gamesCard');
@@ -652,6 +653,7 @@ function clearBuild() {
     analyzeBtn.disabled = true;
 }
 
+// ====== توصيات ======
 const recommendationBox = document.getElementById('recommendationBox');
 function updateProfileAndRecommend(query) {
     const q = query.toLowerCase();
@@ -670,6 +672,7 @@ function updateProfileAndRecommend(query) {
     recommendationBox.style.display = msg ? 'block' : 'none';
 }
 
+// ====== سجل البحث ======
 const EXPIRY = 24*60*60*1000;
 function saveToHistory(kw) {
     if (!kw) return;
@@ -698,6 +701,7 @@ function renderHistory() {
 }
 window.addEventListener('load', renderHistory);
 
+// ====== الاقتراحات عند الكتابة ======
 queryInput.addEventListener('input', () => {
     const val = queryInput.value.toLowerCase().trim();
     suggestionsDiv.innerHTML = '';
@@ -717,6 +721,7 @@ queryInput.addEventListener('input', () => {
 queryInput.addEventListener('keydown', e => { if (e.key === 'Enter') { suggestionsDiv.style.display = 'none'; performSearch(); } });
 document.addEventListener('click', e => { if (e.target !== queryInput && !e.target.classList.contains('btn-add-part')) suggestionsDiv.style.display = 'none'; });
 
+// ====== فلتر المتاجر ======
 let selectedSite = '';
 document.getElementById('filterRow').addEventListener('click', e => {
     const chip = e.target.closest('.filter-chip');
@@ -728,7 +733,7 @@ document.getElementById('filterRow').addEventListener('click', e => {
 
 function setLoading(val) { document.getElementById('loadingBar').style.width = val + '%'; }
 
-// ====== البحث الجبار بالكلمات السلبية (استبعاد التجميعات) ======
+// ====== البحث الجبار ======
 async function performSearch() {
     const query = queryInput.value.trim();
     const resDiv = document.getElementById('results');
@@ -745,15 +750,11 @@ async function performSearch() {
     setLoading(30);
 
     let searchQuery = `${query} سعر السعودية`;
-
-    // 🔴 خوارزمية استبعاد التجميعات الكاملة (Negative Keywords)
-    if (currentActivePartSlot === 'CPU') searchQuery += ' "معالج" -تجميعة -كمبيوتر -desktop -بي -سي';
-    else if (currentActivePartSlot === 'GPU') searchQuery += ' "كرت شاشة" -تجميعة -كمبيوتر -desktop -بي -سي';
-    else if (currentActivePartSlot === 'Motherboard') searchQuery += ' "لوحة أم" OR "مذربورد" -تجميعة -كمبيوتر -بي -سي';
-    else if (currentActivePartSlot === 'RAM') searchQuery += ' "رام" OR "ذاكرة" -تجميعة -كمبيوتر -بي -سي';
-    else if (currentActivePartSlot === 'SSD') searchQuery += ' "ssd" -تجميعة -كمبيوتر -بي -سي';
-    else if (currentActivePartSlot === 'PSU') searchQuery += ' "مزود طاقة" OR "باور سبلاي" -تجميعة -كمبيوتر -بي -سي';
-    else if (!query.includes('تجميعة')) searchQuery += ' -تجميعة -كمبيوتر -desktop -بي -سي'; // للبحث العام
+    
+    // فلتر ذكي لتجنب التجميعات الكاملة عند البحث عن قطع منفردة
+    if (!query.includes('تجميعة')) {
+        searchQuery += ' -تجميعة';
+    }
 
     if (selectedSite) searchQuery += ` site:${selectedSite}`;
     else searchQuery += ' (extra.com OR jarir.com OR amazon.sa OR noon.com OR xcite.com)';
@@ -768,21 +769,11 @@ async function performSearch() {
         if (!res.ok) throw new Error('خطأ في استجابة السيرفر');
         const data = await res.json();
         setLoading(100);
-        let items = data.results || [];
+        const items = data.results || [];
 
         if (!items.length) {
             resDiv.innerHTML = `<div class="state-box"><div class="icon">😔</div><p>ما لقينا نتائج لـ "${query}"<br>جرب كلمات أخرى أو غير الفلتر</p></div>`;
         } else {
-            
-            // خوارزمية الترتيب من الأرخص للأغلى
-            items.sort((a, b) => {
-                const getNum = p => {
-                    if(!p || p === "غير محدد") return 999999;
-                    return parseInt(p.replace(/[^\d]/g, '')) || 999999;
-                };
-                return getNum(a.price) - getNum(b.price);
-            });
-
             resDiv.innerHTML = currentActivePartSlot
                 ? `<div style="background:var(--green-dim);border:1px solid var(--green);color:var(--green);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:12px;text-align:center;">اضغط "أضف للتجميعة" على القطعة اللي تناسبك 👇</div>`
                 : '';
@@ -793,16 +784,12 @@ async function performSearch() {
                 
                 const safeTitle = item.title.replace(/'/g, "\\'").replace(/"/g, '\\"');
                 const safePrice = item.price ? item.price.replace(/'/g, "\\'").replace(/"/g, '\\"') : "غير محدد";
-                
-                let numericPrice = parseInt(safePrice.replace(/[^\d]/g, '')) || 0;
-                let isCheapest = (i === 0 && numericPrice > 0);
-                let badgeHTML = isCheapest ? `<span class="cheapest-badge">🥇 أرخص خيار</span>` : '';
 
                 const div = document.createElement('div');
                 div.className = 'result-card';
                 div.style.animationDelay = `${i*0.05}s`;
                 div.innerHTML = `
-                    <div class="result-num">نتيجة ${i+1} ${badgeHTML}</div>
+                    <div class="result-num">نتيجة ${i+1}</div>
                     <div class="result-title">${item.title}</div>
                     <div class="result-snippet">${item.snippet || 'لا يوجد وصف'}</div>
                     <div style="text-align: right; margin-top: 4px;">
@@ -834,6 +821,7 @@ async function performSearch() {
     }
 }
 
+// ====== OCR ======
 document.getElementById('imageFile').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
