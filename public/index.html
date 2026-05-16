@@ -456,7 +456,7 @@ function checkCompatibility(build) {
     return results;
 }
 
-// ====== إدارة التجميعة والبحث التلقائي ======
+// ====== إدارة التجميعة ======
 const slotMap = {
     'CPU':         {id:'cpu',  label:'المعالج (CPU)',          hint:'i5-13400F أو Ryzen 5 7600X'},
     'GPU':         {id:'gpu',  label:'كرت الشاشة (GPU)',        hint:'RTX 4060 أو RX 7800 XT'},
@@ -557,7 +557,6 @@ function checkAnalyzeBtn() {
     analyzeBtn.disabled = Object.values(buildData).filter(v => v).length < 2;
 }
 
-// ====== التحليل ودقات الشاشة ======
 function analyzeBuild() {
     const compatCard = document.getElementById('compatCard');
     const gamesCard  = document.getElementById('gamesCard');
@@ -653,7 +652,6 @@ function clearBuild() {
     analyzeBtn.disabled = true;
 }
 
-// ====== توصيات ======
 const recommendationBox = document.getElementById('recommendationBox');
 function updateProfileAndRecommend(query) {
     const q = query.toLowerCase();
@@ -672,7 +670,6 @@ function updateProfileAndRecommend(query) {
     recommendationBox.style.display = msg ? 'block' : 'none';
 }
 
-// ====== سجل البحث ======
 const EXPIRY = 24*60*60*1000;
 function saveToHistory(kw) {
     if (!kw) return;
@@ -701,7 +698,6 @@ function renderHistory() {
 }
 window.addEventListener('load', renderHistory);
 
-// ====== الاقتراحات عند الكتابة ======
 queryInput.addEventListener('input', () => {
     const val = queryInput.value.toLowerCase().trim();
     suggestionsDiv.innerHTML = '';
@@ -721,7 +717,6 @@ queryInput.addEventListener('input', () => {
 queryInput.addEventListener('keydown', e => { if (e.key === 'Enter') { suggestionsDiv.style.display = 'none'; performSearch(); } });
 document.addEventListener('click', e => { if (e.target !== queryInput && !e.target.classList.contains('btn-add-part')) suggestionsDiv.style.display = 'none'; });
 
-// ====== فلتر المتاجر ======
 let selectedSite = '';
 document.getElementById('filterRow').addEventListener('click', e => {
     const chip = e.target.closest('.filter-chip');
@@ -733,7 +728,7 @@ document.getElementById('filterRow').addEventListener('click', e => {
 
 function setLoading(val) { document.getElementById('loadingBar').style.width = val + '%'; }
 
-// ====== البحث الجبار (صائد الصفقات - ترتيب من الأرخص) ======
+// ====== البحث الجبار بالكلمات السلبية (استبعاد التجميعات) ======
 async function performSearch() {
     const query = queryInput.value.trim();
     const resDiv = document.getElementById('results');
@@ -750,6 +745,16 @@ async function performSearch() {
     setLoading(30);
 
     let searchQuery = `${query} سعر السعودية`;
+
+    // 🔴 خوارزمية استبعاد التجميعات الكاملة (Negative Keywords)
+    if (currentActivePartSlot === 'CPU') searchQuery += ' "معالج" -تجميعة -كمبيوتر -desktop -بي -سي';
+    else if (currentActivePartSlot === 'GPU') searchQuery += ' "كرت شاشة" -تجميعة -كمبيوتر -desktop -بي -سي';
+    else if (currentActivePartSlot === 'Motherboard') searchQuery += ' "لوحة أم" OR "مذربورد" -تجميعة -كمبيوتر -بي -سي';
+    else if (currentActivePartSlot === 'RAM') searchQuery += ' "رام" OR "ذاكرة" -تجميعة -كمبيوتر -بي -سي';
+    else if (currentActivePartSlot === 'SSD') searchQuery += ' "ssd" -تجميعة -كمبيوتر -بي -سي';
+    else if (currentActivePartSlot === 'PSU') searchQuery += ' "مزود طاقة" OR "باور سبلاي" -تجميعة -كمبيوتر -بي -سي';
+    else if (!query.includes('تجميعة')) searchQuery += ' -تجميعة -كمبيوتر -desktop -بي -سي'; // للبحث العام
+
     if (selectedSite) searchQuery += ` site:${selectedSite}`;
     else searchQuery += ' (extra.com OR jarir.com OR amazon.sa OR noon.com OR xcite.com)';
 
@@ -789,7 +794,6 @@ async function performSearch() {
                 const safeTitle = item.title.replace(/'/g, "\\'").replace(/"/g, '\\"');
                 const safePrice = item.price ? item.price.replace(/'/g, "\\'").replace(/"/g, '\\"') : "غير محدد";
                 
-                // إضافة تاج لأرخص نتيجة إذا كان السعر معروف
                 let numericPrice = parseInt(safePrice.replace(/[^\d]/g, '')) || 0;
                 let isCheapest = (i === 0 && numericPrice > 0);
                 let badgeHTML = isCheapest ? `<span class="cheapest-badge">🥇 أرخص خيار</span>` : '';
@@ -830,7 +834,6 @@ async function performSearch() {
     }
 }
 
-// ====== OCR ======
 document.getElementById('imageFile').addEventListener('change', async (e) => {
     const file = e.target.files[0];
     if (!file) return;
