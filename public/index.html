@@ -405,29 +405,40 @@
         const categoryCard = document.getElementById('categoryCard');
 
         // خوارزمية التصنيف الذكي بناءً على النص المستخرج من الصورة
-        function classifyText(text) {
-            const lowerText = text.toLowerCase();
+       function classifyText(text) {
+            const lowerText = text.toLowerCase().trim();
             
-            if (lowerText.includes('intel') || lowerText.includes('ryzen') || lowerText.includes('core i') || /i[3579]-/.test(lowerText) || lowerText.includes('amd cpu')) {
-                return "🧠 تصنيف القطعة: معالج (CPU)";
-            }
-            if (lowerText.includes('rtx') || lowerText.includes('gtx') || lowerText.includes('radeon') || lowerText.includes('gpu') || lowerText.includes('nvidia') || lowerText.includes('rx ')) {
+            // فحص كروت الشاشة: يلقط RTX، GTX، وصيغ AMD الذكية مثل RX وموجود معها XT أو أرقام
+            if (
+                lowerText.includes('rtx') || 
+                lowerText.includes('gtx') || 
+                lowerText.includes('nvidia') || 
+                lowerText.includes('graphics') ||
+                lowerText.includes('radeon') ||
+                lowerText.includes('xt') || // لقط كروت الـ XT
+                /\brx\s?\d{4}/.test(lowerText) // لقط RX متبوعة بأرقام
+            ) {
                 return "🎮 تصنيف القطعة: كرت شاشة (GPU)";
             }
-            if (lowerText.includes('ram') || lowerText.includes('ddr4') || lowerText.includes('ddr5') || lowerText.includes('corsair vengeance') || lowerText.includes('kingston fury')) {
+            
+            // فحص المعالجات
+            if (lowerText.includes('intel') || lowerText.includes('ryzen') || lowerText.includes('amd cpu') || /\bi[3579]-/.test(lowerText) || lowerText.includes('processor')) {
+                return "🧠 تصنيف القطعة: معالج (CPU)";
+            }
+            
+            // فحص الرامات
+            if (lowerText.includes('corsair') || lowerText.includes('ddr4') || lowerText.includes('ddr5') || lowerText.includes('ram ') || lowerText.includes('mhz')) {
                 return "⚡ تصنيف القطعة: ذاكرة عشوائية (RAM)";
             }
-            if (lowerText.includes('ssd') || lowerText.includes('nvme') || lowerText.includes('samsung 990') || lowerText.includes('crucial') || lowerText.includes('تخزين') || lowerText.includes('hdd')) {
+            
+            // فحص التخزين
+            if (lowerText.includes('ssd') || lowerText.includes('nvme') || lowerText.includes('samsung 9') || lowerText.includes('wd_black')) {
                 return "💾 تصنيف القطعة: وحدة تخزين (SSD / HDD)";
             }
-            if (lowerText.includes('شاشة') || lowerText.includes('monitor') || lowerText.includes('oled') || lowerText.includes('hz') || lowerText.includes('odyssey') || lowerText.includes('ultragear')) {
+            
+            // فحص الشاشات
+            if (lowerText.includes('شاشة') || lowerText.includes('monitor') || lowerText.includes('oled') || lowerText.includes('hz') || lowerText.includes('odyssey')) {
                 return "📺 تصنيف القطعة: شاشة عرض (Monitor)";
-            }
-            if (lowerText.includes('motherboard') || lowerText.includes('لوحة') || lowerText.includes('b650') || lowerText.includes('z790') || lowerText.includes('b760')) {
-                return "🔌 تصنيف القطعة: لوحة أم (Motherboard)";
-            }
-            if (lowerText.includes('power supply') || lowerText.includes('psu') || lowerText.includes('watt') || lowerText.includes('واط')) {
-                return "🔋 تصنيف القطعة: مزود طاقة (Power Supply)";
             }
             
             return "📦 تصنيف القطعة: ملحقات / قطعة منوعة";
