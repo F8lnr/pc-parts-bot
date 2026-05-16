@@ -3,44 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوت قطع البي سي 🇸🇦</title>
+    <title>بوت قطع البي سي والشاشات 🇸🇦</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; color: #f8fafc; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
-        .card { background-color: #1e293b; padding: 30px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 600px; text-align: center; position: relative; }
-        h1 { font-size: 24px; color: #4ade80; margin-bottom: 20px; }
-        .search-container { position: relative; flex: 1; text-align: right; }
-        .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
-        input[type="text"] { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background-color: #0f172a; color: white; outline: none; box-sizing: border-box; }
-        .btn-search { padding: 12px 24px; border-radius: 8px; border: none; background-color: #22c55e; color: white; cursor: pointer; font-weight: bold; }
-        .suggestions-list { position: absolute; top: 100%; left: 0; right: 0; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 1000; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); display: none; }
-        .suggestion-item { padding: 10px 15px; cursor: pointer; color: #cbd5e1; font-size: 14px; border-bottom: 1px solid #0f172a; text-align: right; }
+        /* تحسين الخلفية وتوزيع العناصر لمنع الزحمة */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #0f172a; 
+            color: #f8fafc; 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; /* تغيير السنتر عشان يسمح بالنزول للمحتوى */
+            min-height: 100vh; 
+            margin: 0; 
+            padding: 20px; 
+            box-sizing: border-box;
+        }
+        .card { 
+            background-color: #1e293b; 
+            padding: 25px 20px; 
+            border-radius: 16px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
+            width: 100%; 
+            max-width: 500px; 
+            text-align: center; 
+            margin-top: 20px;
+        }
+        h1 { font-size: 22px; color: #4ade80; margin-bottom: 25px; }
+        
+        /* تنظيم صندوق البحث والزر عمودياً في الجوال لمنع التداخل */
+        .search-container { 
+            position: relative; 
+            width: 100%;
+        }
+        .input-group { 
+            display: flex; 
+            flex-direction: column; /* ترتيب عمودي مريح للجوال */
+            gap: 12px; 
+            margin-bottom: 20px; 
+        }
+        input[type="text"] { 
+            width: 100%; 
+            padding: 14px; 
+            border-radius: 8px; 
+            border: 1px solid #334155; 
+            background-color: #0f172a; 
+            color: white; 
+            outline: none; 
+            box-sizing: border-box;
+            font-size: 15px;
+        }
+        .btn-search { 
+            width: 100%; /* زر عريض مريح للضغط بالإصبع */
+            padding: 14px; 
+            border-radius: 8px; 
+            border: none; 
+            background-color: #22c55e; 
+            color: white; 
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 16px;
+        }
+        
+        /* قائمة الاقتراحات بتصميم يتماشى مع البنية الجديدة */
+        .suggestions-list { 
+            position: absolute; 
+            top: 100%; 
+            left: 0; 
+            right: 0; 
+            background-color: #1e293b; 
+            border: 1px solid #334155; 
+            border-radius: 8px; 
+            max-height: 180px; 
+            overflow-y: auto; 
+            z-index: 1000; 
+            margin-top: 5px; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.4); 
+            display: none; 
+        }
+        .suggestion-item { 
+            padding: 12px 15px; 
+            cursor: pointer; 
+            color: #cbd5e1; 
+            font-size: 14px; 
+            border-bottom: 1px solid #0f172a; 
+            text-align: right; 
+        }
         .suggestion-item:hover { background-color: #334155; color: #4ade80; }
-        .result-item { background: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: right; border-right: 4px solid #22c55e; }
-        .result-link { display: inline-block; margin-top: 10px; background: #22c55e; color: white; text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; }
-        .upload-area { border: 2px dashed #334155; padding: 15px; border-radius: 12px; margin-top: 20px; cursor: pointer; color: #94a3b8; }
+        
+        /* مساحات مريحة للنتائج ورفع الصور */
+        .upload-area { 
+            border: 2px dashed #334155; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-top: 25px; 
+            cursor: pointer; 
+            color: #94a3b8; 
+            font-size: 14px;
+        }
+        #results { margin-top: 25px; width: 100%; }
+        .result-item { 
+            background: #0f172a; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-bottom: 15px; 
+            text-align: right; 
+            border-right: 4px solid #22c55e; 
+        }
+        .result-link { 
+            display: inline-block; 
+            margin-top: 10px; 
+            background: #22c55e; 
+            color: white; 
+            text-decoration: none; 
+            padding: 8px 16px; 
+            border-radius: 6px; 
+            font-size: 13px; 
+            font-weight: bold; 
+        }
     </style>
 </head>
 <body>
     <div class="card">
         <h1>🖥️ بوت قطع البي سي والشاشات 🇸🇦</h1>
+        
         <div class="input-group">
             <div class="search-container">
                 <input type="text" id="query" placeholder="ابحث عن معالج، كرت، شاشة..." autocomplete="off">
                 <div id="suggestions" class="suggestions-list"></div>
             </div>
-            <button class="btn-search" onclick="performSearch()">بحث</button>
+            <button class="btn-search" onclick="performSearch()">بحث عن القطعة 🔍</button>
         </div>
+
         <div class="upload-area" onclick="document.getElementById('imageFile').click()">
-            📷 اضغط لرفع صورة القطعة (OCR)
+            📷 اضغط هنا لرفع صورة القطعة للبحث (OCR)
             <input type="file" id="imageFile" accept="image/*" style="display:none">
-            <p id="status" style="font-size:12px; color:#4ade80; margin-top:5px;"></p>
+            <p id="status" style="font-size:12px; color:#4ade80; margin-top:5px; margin-bottom:0;"></p>
         </div>
-        <div id="results" style="margin-top: 20px;">النتائج ستظهر هنا...</div>
+        
+        <div id="results">النتائج ستظهر هنا...</div>
     </div>
 
     <script>
-        // أضفنا شاشات وقطع منوعة وخففنا الأسماء المعقدة عشان يمسك في البحث صح
         const pcPartsData = [
             "i5-12400F", "i5-13400F", "i7-13700K", "i7-14700K", "i9-14900K",
             "Ryzen 5 5600X", "Ryzen 7 7800X3D",
@@ -83,127 +187,31 @@
             const resDiv = document.getElementById('results');
             if (!query) return;
             resDiv.innerHTML = "جاري جلب أفضل الأسعار... ⏳";
-            const res = await fetch('/api/search', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ query })
-            });
-            const data = await res.json();
-            resDiv.innerHTML = "";
-            if (data.results && data.results.length > 0) {
-                data.results.forEach(item => {
-                    resDiv.innerHTML += `
-                        <div class="result-item">
-                            <strong style="color: #4ade80;">${item.title}</strong>
-                            <p style="font-size: 13px; color: #cbd5e1; margin: 8px 0;">${item.snippet}</p>
-                            <a href="${item.link}" target="_blank" class="result-link">انتقل للموقع وعرض السعر 🔗</a>
-                        </div>`;
-                });
-            } else { resDiv.innerText = "لم يتم العثور على نتائج. جرب كلمات أخرى."; }
-        }
-
-        document.getElementById('imageFile').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (!file) return;
-            document.getElementById('status').innerText = "جاري تحليل الصورة... ☕";
-            Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
-                queryInput.value = text.trim();
-                document.getElementById('status').innerText = "تم استخراج النص!";
-                performSearch();
-            });
-        });
-    </script>
-</body>
-</html>        </div>
-
-        <div class="upload-area" onclick="document.getElementById('imageFile').click()">
-            📷 اضغط لرفع صورة القطعة (OCR)
-            <input type="file" id="imageFile" accept="image/*" style="display:none">
-            <p id="status" style="font-size:12px; color:#4ade80; margin-top:5px;"></p>
-        </div>
-        <div id="results" style="margin-top: 20px;">النتائج ستظهر هنا...</div>
-    </div>
-
-    <script>
-        // قاعدة بيانات محلية لأشهر القطع والاقتراحات
-        const pcPartsData = [
-            "Intel Core i5-12400F", "Intel Core i5-13400F", "Intel Core i5-14400F",
-            "Intel Core i7-12700K", "Intel Core i7-13700K", "Intel Core i7-14700K",
-            "Intel Core i9-13900K", "Intel Core i9-14900K",
-            "AMD Ryzen 5 5600X", "AMD Ryzen 5 7600X",
-            "AMD Ryzen 7 5800X3D", "AMD Ryzen 7 7800X3D",
-            "Nvidia RTX 3060", "Nvidia RTX 3060 Ti", "Nvidia RTX 4060", "Nvidia RTX 4060 Ti",
-            "Nvidia RTX 4070", "Nvidia RTX 4070 Super", "Nvidia RTX 4070 Ti Super",
-            "Nvidia RTX 4080 Super", "Nvidia RTX 4090",
-            "Corsair Vengeance RAM 16GB DDR4", "Corsair Vengeance RAM 32GB DDR5",
-            "Kingston NV2 SSD 1TB", "Samsung 990 Pro SSD 2TB"
-        ];
-
-        const queryInput = document.getElementById('query');
-        const suggestionsDiv = document.getElementById('suggestions');
-
-        // دالة مراقبة الكتابة وإظهار الاقتراحات
-        queryInput.addEventListener('input', () => {
-            const value = queryInput.value.toLowerCase().trim();
-            suggestionsDiv.innerHTML = '';
             
-            if (!value) {
-                suggestionsDiv.style.display = 'none';
-                return;
-            }
-
-            // فلترة القطع بناء على ما يكتبه المستخدم
-            const filteredParts = pcPartsData.filter(part => part.toLowerCase().includes(value));
-
-            if (filteredParts.length > 0) {
-                filteredParts.forEach(part => {
-                    const item = document.createElement('div');
-                    item.className = 'suggestion-item';
-                    item.innerText = part;
-                    // عند الضغط على الاقتراح، يتم وضعه في خانة البحث والبحث تلقائياً
-                    item.addEventListener('click', () => {
-                        queryInput.value = part;
-                        suggestionsDiv.style.display = 'none';
-                        performSearch();
+            try {
+                const res = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ query })
+                });
+                const data = await res.json();
+                resDiv.innerHTML = "";
+                
+                if (data.results && data.results.length > 0) {
+                    data.results.forEach(item => {
+                        resDiv.innerHTML += `
+                            <div class="result-item">
+                                <strong style="color: #4ade80; display:block; margin-bottom:5px;">${item.title}</strong>
+                                <p style="font-size: 13px; color: #cbd5e1; margin: 8px 0; line-height:1.4;">${item.snippet}</p>
+                                <a href="${item.link}" target="_blank" class="result-link">انتقل للموقع وعرض السعر 🔗</a>
+                            </div>`;
                     });
-                    suggestionsDiv.appendChild(item);
-                });
-                suggestionsDiv.style.display = 'block';
-            } else {
-                suggestionsDiv.style.display = 'none';
+                } else { 
+                    resDiv.innerText = "لم يتم العثور على نتائج. جرب كلمات بحث أخرى أو اختصر الاسم."; 
+                }
+            } catch (err) {
+                resDiv.innerText = "حدث خطأ أثناء الاتصال بالسيرفر.";
             }
-        });
-
-        // إغلاق قائمة الاقتراحات إذا ضغط المستخدم في أي مكان خارجها
-        document.addEventListener('click', (e) => {
-            if (e.target !== queryInput) {
-                suggestionsDiv.style.display = 'none';
-            }
-        });
-
-        async function performSearch() {
-            const query = queryInput.value;
-            const resDiv = document.getElementById('results');
-            if (!query) return;
-            resDiv.innerHTML = "جاري جلب الأسعار... ⏳";
-            
-            const res = await fetch('/api/search', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ query })
-            });
-            const data = await res.json();
-            resDiv.innerHTML = "";
-            if (data.results && data.results.length > 0) {
-                data.results.forEach(item => {
-                    resDiv.innerHTML += `
-                        <div class="result-item">
-                            <strong style="color: #4ade80;">${item.title}</strong>
-                            <p style="font-size: 13px; color: #cbd5e1; margin: 8px 0;">${item.snippet}</p>
-                            <a href="${item.link}" target="_blank" class="result-link">انتقل للموقع لعرض السعر 🔗</a>
-                        </div>`;
-                });
-            } else { resDiv.innerText = "لم يتم العثور على نتائج."; }
         }
 
         document.getElementById('imageFile').addEventListener('change', async (e) => {
