@@ -13,12 +13,9 @@
         .input-group { display: flex; gap: 10px; margin-bottom: 20px; }
         input[type="text"] { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #334155; background-color: #0f172a; color: white; outline: none; box-sizing: border-box; }
         .btn-search { padding: 12px 24px; border-radius: 8px; border: none; background-color: #22c55e; color: white; cursor: pointer; font-weight: bold; }
-        
-        /* تصميم قائمة الاقتراحات الفخمة */
         .suggestions-list { position: absolute; top: 100%; left: 0; right: 0; background-color: #1e293b; border: 1px solid #334155; border-radius: 8px; max-height: 200px; overflow-y: auto; z-index: 1000; margin-top: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.2); display: none; }
         .suggestion-item { padding: 10px 15px; cursor: pointer; color: #cbd5e1; font-size: 14px; border-bottom: 1px solid #0f172a; text-align: right; }
         .suggestion-item:hover { background-color: #334155; color: #4ade80; }
-        
         .result-item { background: #0f172a; padding: 15px; border-radius: 8px; margin-bottom: 10px; text-align: right; border-right: 4px solid #22c55e; }
         .result-link { display: inline-block; margin-top: 10px; background: #22c55e; color: white; text-decoration: none; padding: 6px 12px; border-radius: 4px; font-size: 13px; font-weight: bold; }
         .upload-area { border: 2px dashed #334155; padding: 15px; border-radius: 12px; margin-top: 20px; cursor: pointer; color: #94a3b8; }
@@ -26,15 +23,98 @@
 </head>
 <body>
     <div class="card">
-        <h1>🖥️ بوت قطع البي سي 🇸🇦</h1>
-        
+        <h1>🖥️ بوت قطع البي سي والشاشات 🇸🇦</h1>
         <div class="input-group">
             <div class="search-container">
-                <input type="text" id="query" placeholder="اكتب اسم القطعة (مثلاً: i5-12400f)..." autocomplete="off">
+                <input type="text" id="query" placeholder="ابحث عن معالج، كرت، شاشة..." autocomplete="off">
                 <div id="suggestions" class="suggestions-list"></div>
             </div>
             <button class="btn-search" onclick="performSearch()">بحث</button>
         </div>
+        <div class="upload-area" onclick="document.getElementById('imageFile').click()">
+            📷 اضغط لرفع صورة القطعة (OCR)
+            <input type="file" id="imageFile" accept="image/*" style="display:none">
+            <p id="status" style="font-size:12px; color:#4ade80; margin-top:5px;"></p>
+        </div>
+        <div id="results" style="margin-top: 20px;">النتائج ستظهر هنا...</div>
+    </div>
+
+    <script>
+        // أضفنا شاشات وقطع منوعة وخففنا الأسماء المعقدة عشان يمسك في البحث صح
+        const pcPartsData = [
+            "i5-12400F", "i5-13400F", "i7-13700K", "i7-14700K", "i9-14900K",
+            "Ryzen 5 5600X", "Ryzen 7 7800X3D",
+            "RTX 3060", "RTX 4060", "RTX 4070 Super", "RTX 4080 Super", "RTX 4090",
+            "شاشة OLED جيمنج", "شاشة Mini LED", "شاشة TCL 4K", "شاشة 2K 180Hz",
+            "شاشة Asus Rog", "شاشة Samsung Odyssey",
+            "SSD 1TB", "SSD 2TB Samsung", "RAM 32GB DDR5"
+        ];
+
+        const queryInput = document.getElementById('query');
+        const suggestionsDiv = document.getElementById('suggestions');
+
+        queryInput.addEventListener('input', () => {
+            const value = queryInput.value.toLowerCase().trim();
+            suggestionsDiv.innerHTML = '';
+            if (!value) { suggestionsDiv.style.display = 'none'; return; }
+            const filteredParts = pcPartsData.filter(part => part.toLowerCase().includes(value));
+            if (filteredParts.length > 0) {
+                filteredParts.forEach(part => {
+                    const item = document.createElement('div');
+                    item.className = 'suggestion-item';
+                    item.innerText = part;
+                    item.addEventListener('click', () => {
+                        queryInput.value = part;
+                        suggestionsDiv.style.display = 'none';
+                        performSearch();
+                    });
+                    suggestionsDiv.appendChild(item);
+                });
+                suggestionsDiv.style.display = 'block';
+            } else { suggestionsDiv.style.display = 'none'; }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (e.target !== queryInput) { suggestionsDiv.style.display = 'none'; }
+        });
+
+        async function performSearch() {
+            const query = queryInput.value;
+            const resDiv = document.getElementById('results');
+            if (!query) return;
+            resDiv.innerHTML = "جاري جلب أفضل الأسعار... ⏳";
+            const res = await fetch('/api/search', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ query })
+            });
+            const data = await res.json();
+            resDiv.innerHTML = "";
+            if (data.results && data.results.length > 0) {
+                data.results.forEach(item => {
+                    resDiv.innerHTML += `
+                        <div class="result-item">
+                            <strong style="color: #4ade80;">${item.title}</strong>
+                            <p style="font-size: 13px; color: #cbd5e1; margin: 8px 0;">${item.snippet}</p>
+                            <a href="${item.link}" target="_blank" class="result-link">انتقل للموقع وعرض السعر 🔗</a>
+                        </div>`;
+                });
+            } else { resDiv.innerText = "لم يتم العثور على نتائج. جرب كلمات أخرى."; }
+        }
+
+        document.getElementById('imageFile').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            document.getElementById('status').innerText = "جاري تحليل الصورة... ☕";
+            Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
+                queryInput.value = text.trim();
+                document.getElementById('status').innerText = "تم استخراج النص!";
+                performSearch();
+            });
+        });
+    </script>
+</body>
+</html>        </div>
 
         <div class="upload-area" onclick="document.getElementById('imageFile').click()">
             📷 اضغط لرفع صورة القطعة (OCR)
