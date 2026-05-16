@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>بوت قطع البي سي والشاشات 🇸🇦</title>
+    <title>ابحث عن قطعتك 🇸🇦 - أسعار البي سي والشاشات</title>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
@@ -318,12 +318,12 @@
 
         <div class="header">
             <div class="badge">🇸🇦 السوق السعودي</div>
-            <h1>🖥️ بوت قطع <span>البي سي</span> والشاشات</h1>
-            <p>ابحث عن أي قطعة أو شاشة وشوف أسعارها من المتاجر السعودية مباشرة</p>
+            <h1>🖥️ ابحث عن <span>قطعتك</span></h1>
+            <p>رادارك الذكي لمقارنة أسعار قطع البي سي والشاشات في المتاجر المحلية</p>
         </div>
 
         <div class="card">
-            <div class="card-title">البحث عن قطعة أو شاشة</div>
+            <div class="card-title">خيارات البحث المباشر</div>
             <div class="search-wrap">
                 <span class="search-icon">🔍</span>
                 <input type="text" id="query" placeholder="مثال: RTX 4070، i5-13400F، شاشة OLED..." autocomplete="off">
@@ -343,13 +343,13 @@
             </div>
 
             <button class="btn-primary" id="searchBtn" onclick="performSearch()">
-                <span id="btnText">بحث عن القطعة</span>
+                <span id="btnText">اعثر على أفضل سعر</span>
                 <span id="btnIcon">🔍</span>
             </button>
         </div>
 
         <div class="card">
-            <div class="card-title">رفع صورة القطعة (OCR)</div>
+            <div class="card-title">البحث بواسطة صورة القطعة (OCR)</div>
             <div class="upload-area" onclick="document.getElementById('imageFile').click()">
                 <div class="icon">📷</div>
                 اضغط هنا لرفع صورة وسيتم استخراج اسم القطعة تلقائياً
@@ -359,12 +359,12 @@
         </div>
 
         <div class="card">
-            <div class="card-title">النتائج</div>
+            <div class="card-title">نتائج البحث والأسعار</div>
             <div class="loading-bar" id="loadingBar"></div>
             <div id="results">
                 <div class="state-box">
                     <div class="icon">🖥️</div>
-                    <p>ابحث عن أي قطعة أو شاشة وستظهر النتائج من المتاجر السعودية هنا</p>
+                    <p>أدخل اسم القطعة أو الشاشة، وستظهر النتائج هنا فوراً</p>
                 </div>
             </div>
         </div>
@@ -449,7 +449,7 @@
                 const res = await fetch('/api/search', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query: searchQuery }) // إرسال الاستعلام النهائي الكامل للسيرفر
+                    body: JSON.stringify({ query: searchQuery })
                 });
 
                 if (!res.ok) throw new Error('حدث خطأ في استجابة السيرفر');
@@ -479,10 +479,10 @@
                     });
                 }
             } catch (err) {
-                resDiv.innerHTML = `<div class="state-box"><div class="icon">⚠️</div><p>خطأ: ${err.message}<br><small>تأكد من تحديث كود server.js في GitHub</small></p></div>`;
+                resDiv.innerHTML = `<div class="state-box"><div class="icon">⚠️</div><p>خطأ: ${err.message}<br><small>تأكد من أن السيرفر شغال</small></p></div>`;
             } finally {
                 btn.disabled = false;
-                document.getElementById('btnText').innerText = 'بحث عن القطعة';
+                document.getElementById('btnText').innerText = 'اعثر على أفضل سعر';
                 document.getElementById('btnIcon').innerText = '🔍';
                 setTimeout(() => setLoading(0), 800);
             }
