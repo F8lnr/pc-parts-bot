@@ -16,7 +16,6 @@ app.get("/", (req, res) => {
 app.post("/api/search", async (req, res) => {
     const { query } = req.body;
     try {
-        // شلنا تقييد موقع أمازون وخليناه يبحث في المتاجر السعودية بشكل عام عشان تطلع الشاشات والقطع
         const response = await fetch("https://google.serper.dev/search", {
             method: "POST",
             headers: {
@@ -26,9 +25,31 @@ app.post("/api/search", async (req, res) => {
             body: JSON.stringify({ q: query, gl: "sa", hl: "ar", num: 10 })
         });
         const data = await response.json();
-        const results = data.organic?.slice(0, 5).map(item => ({
-            title: item.title, link: item.link, snippet: item.snippet
-        })) || [];
+        
+        // استخراج العنوان، الرابط، الوصف، والسعر المستهدف
+        const results = data.organic?.slice(0, 8).map(item => {
+            // Serper يضع السعر أحياناً في الحقل المباشر أو داخل الـ attributes
+            let itemPrice = "غير محدد";
+            if (item.price) {
+                itemPrice = item.price;
+            } else if (item.attributes?.["Price"]) {
+                itemPrice = item.attributes["Price"];
+            } else {
+                // محاولة ذكية لاستخراج السعر من الـ snippet إذا لم يتوفر كمتغير مستقل
+                const priceMatch = item.snippet?.match(/(\d+[\s,.]?\d*)\s*(ريال|رس|SR|SAR)/i);
+                if (priceMatch) {
+                    itemPrice = `${priceMatch[1]} ريال`;
+                }
+            }
+
+            return {
+                title: item.title,
+                link: item.link,
+                snippet: item.snippet,
+                price: itemPrice
+            };
+        }) || [];
+        
         res.json({ results });
     } catch (err) {
         res.status(500).json({ error: "خطأ في السيرفر" });
