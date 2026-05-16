@@ -23,7 +23,7 @@ app.post("/api/search", async (req, res) => {
                 "X-API-KEY": process.env.SERPER_API_KEY,
                 "Content-Type": "application/json"
             },
-            body: JSON.stringify({ q: `${query} السعودية سعر`, gl: "sa", hl: "ar" })
+            body: JSON.stringify({ q: query, gl: "sa", hl: "ar", num: 10 })
         });
         const data = await response.json();
         const results = data.organic?.slice(0, 5).map(item => ({
