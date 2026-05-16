@@ -4,166 +4,600 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>بوت قطع البي سي والشاشات 🇸🇦</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        /* تحسين الخلفية وتوزيع العناصر لمنع الزحمة */
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            background-color: #0f172a; 
-            color: #f8fafc; 
-            display: flex; 
-            justify-content: center; 
-            align-items: flex-start; /* تغيير السنتر عشان يسمح بالنزول للمحتوى */
-            min-height: 100vh; 
-            margin: 0; 
-            padding: 20px; 
-            box-sizing: border-box;
+        :root {
+            --bg: #080c12;
+            --surface: #0e1420;
+            --surface2: #141c2e;
+            --border: #1e2d47;
+            --green: #00e676;
+            --green-dim: #00c85344;
+            --green-glow: #00e67622;
+            --text: #e2eaf5;
+            --muted: #6b7fa3;
+            --accent: #00b4d8;
         }
-        .card { 
-            background-color: #1e293b; 
-            padding: 25px 20px; 
-            border-radius: 16px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.3); 
-            width: 100%; 
-            max-width: 500px; 
-            text-align: center; 
-            margin-top: 20px;
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 24px 16px 60px;
+            position: relative;
+            overflow-x: hidden;
         }
-        h1 { font-size: 22px; color: #4ade80; margin-bottom: 25px; }
-        
-        /* تنظيم صندوق البحث والزر عمودياً في الجوال لمنع التداخل */
-        .search-container { 
-            position: relative; 
+
+        /* خلفية شبكة */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(var(--border) 1px, transparent 1px),
+                linear-gradient(90deg, var(--border) 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* هالة خضراء */
+        body::after {
+            content: '';
+            position: fixed;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 700px;
+            height: 400px;
+            background: radial-gradient(ellipse, #00e67611 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        .container {
             width: 100%;
+            max-width: 640px;
+            position: relative;
+            z-index: 1;
         }
-        .input-group { 
-            display: flex; 
-            flex-direction: column; /* ترتيب عمودي مريح للجوال */
-            gap: 12px; 
-            margin-bottom: 20px; 
+
+        /* الهيدر */
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+            animation: fadeDown 0.6s ease both;
         }
-        input[type="text"] { 
-            width: 100%; 
-            padding: 14px; 
-            border-radius: 8px; 
-            border: 1px solid #334155; 
-            background-color: #0f172a; 
-            color: white; 
-            outline: none; 
-            box-sizing: border-box;
+
+        .header .badge {
+            display: inline-block;
+            background: var(--green-dim);
+            border: 1px solid var(--green);
+            color: var(--green);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 100px;
+            letter-spacing: 1px;
+            margin-bottom: 14px;
+        }
+
+        .header h1 {
+            font-size: clamp(22px, 5vw, 32px);
+            font-weight: 700;
+            color: #fff;
+            line-height: 1.3;
+        }
+
+        .header h1 span {
+            color: var(--green);
+        }
+
+        .header p {
+            color: var(--muted);
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        /* البطاقات */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            animation: fadeUp 0.5s ease both;
+        }
+
+        .card-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title::before {
+            content: '';
+            width: 3px;
+            height: 14px;
+            background: var(--green);
+            border-radius: 2px;
+            display: block;
+        }
+
+        /* حقل API Key */
+        .api-key-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .input-wrap {
+            position: relative;
+            flex: 1;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            font-size: 14px;
+            padding: 12px 16px;
+            border-radius: 10px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        input:focus {
+            border-color: var(--green);
+            box-shadow: 0 0 0 3px var(--green-glow);
+        }
+
+        .btn-eye {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+        }
+
+        /* حقل البحث */
+        .search-wrap {
+            position: relative;
+        }
+
+        #query {
+            padding-left: 44px;
             font-size: 15px;
         }
-        .btn-search { 
-            width: 100%; /* زر عريض مريح للضغط بالإصبع */
-            padding: 14px; 
-            border-radius: 8px; 
-            border: none; 
-            background-color: #22c55e; 
-            color: white; 
-            cursor: pointer; 
-            font-weight: bold; 
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted);
+            font-size: 18px;
+            pointer-events: none;
+        }
+
+        /* الاقتراحات */
+        .suggestions-list {
+            display: none;
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0; right: 0;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        .suggestion-item {
+            padding: 11px 16px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+            transition: background 0.15s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .suggestion-item:last-child { border-bottom: none; }
+
+        .suggestion-item:hover {
+            background: var(--green-dim);
+            color: var(--green);
+        }
+
+        .suggestion-item::before {
+            content: '⌕';
+            color: var(--muted);
             font-size: 16px;
         }
-        
-        /* قائمة الاقتراحات بتصميم يتماشى مع البنية الجديدة */
-        .suggestions-list { 
-            position: absolute; 
-            top: 100%; 
-            left: 0; 
-            right: 0; 
-            background-color: #1e293b; 
-            border: 1px solid #334155; 
-            border-radius: 8px; 
-            max-height: 180px; 
-            overflow-y: auto; 
-            z-index: 1000; 
-            margin-top: 5px; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.4); 
-            display: none; 
+
+        /* الأزرار */
+        .btn-primary {
+            width: 100%;
+            background: var(--green);
+            color: #000;
+            border: none;
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            padding: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 12px;
+            transition: opacity 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
-        .suggestion-item { 
-            padding: 12px 15px; 
-            cursor: pointer; 
-            color: #cbd5e1; 
-            font-size: 14px; 
-            border-bottom: 1px solid #0f172a; 
-            text-align: right; 
+
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-save {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--green);
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 10px 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.2s;
         }
-        .suggestion-item:hover { background-color: #334155; color: #4ade80; }
-        
-        /* مساحات مريحة للنتائج ورفع الصور */
-        .upload-area { 
-            border: 2px dashed #334155; 
-            padding: 20px; 
-            border-radius: 12px; 
-            margin-top: 25px; 
-            cursor: pointer; 
-            color: #94a3b8; 
-            font-size: 14px;
+
+        .btn-save:hover { background: var(--green-dim); }
+
+        /* رفع الصورة */
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            color: var(--muted);
+            font-size: 13px;
+            transition: border-color 0.2s, background 0.2s;
         }
-        #results { margin-top: 25px; width: 100%; }
-        .result-item { 
-            background: #0f172a; 
-            padding: 15px; 
-            border-radius: 8px; 
-            margin-bottom: 15px; 
-            text-align: right; 
-            border-right: 4px solid #22c55e; 
+
+        .upload-area:hover {
+            border-color: var(--green);
+            background: var(--green-glow);
         }
-        .result-link { 
-            display: inline-block; 
-            margin-top: 10px; 
-            background: #22c55e; 
-            color: white; 
-            text-decoration: none; 
-            padding: 8px 16px; 
-            border-radius: 6px; 
-            font-size: 13px; 
-            font-weight: bold; 
+
+        .upload-area .icon { font-size: 28px; margin-bottom: 6px; }
+
+        #status {
+            font-size: 12px;
+            color: var(--green);
+            margin-top: 6px;
+            min-height: 18px;
+        }
+
+        /* فلاتر المتاجر */
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 4px;
+        }
+
+        .filter-chip {
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            color: var(--muted);
+            font-family: 'IBM Plex Sans Arabic', sans-serif;
+            font-size: 12px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-chip.active {
+            background: var(--green-dim);
+            border-color: var(--green);
+            color: var(--green);
+        }
+
+        /* النتائج */
+        #results { margin-top: 4px; }
+
+        .result-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            animation: fadeUp 0.3s ease both;
+            transition: border-color 0.2s;
+        }
+
+        .result-card:hover { border-color: #2a3d5a; }
+
+        .result-num {
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--green);
+            letter-spacing: 1px;
+        }
+
+        .result-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #fff;
+            line-height: 1.4;
+        }
+
+        .result-snippet {
+            font-size: 13px;
+            color: var(--muted);
+            line-height: 1.6;
+        }
+
+        .result-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 4px;
+        }
+
+        .result-source {
+            font-size: 11px;
+            color: #3a5070;
+            direction: ltr;
+        }
+
+        .result-link {
+            background: var(--green-dim);
+            border: 1px solid var(--green);
+            color: var(--green);
+            text-decoration: none;
+            padding: 7px 16px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 700;
+            transition: background 0.2s;
+        }
+
+        .result-link:hover { background: #00e67633; }
+
+        /* حالات الواجهة */
+        .state-box {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--muted);
+        }
+
+        .state-box .icon { font-size: 36px; margin-bottom: 12px; }
+        .state-box p { font-size: 14px; line-height: 1.6; }
+
+        /* شريط التحميل */
+        .loading-bar {
+            height: 3px;
+            background: var(--green);
+            border-radius: 2px;
+            width: 0%;
+            transition: width 0.3s ease;
+            margin-bottom: 16px;
+        }
+
+        /* الكاونتر */
+        .key-status {
+            font-size: 11px;
+            color: var(--green);
+            margin-top: 6px;
+            display: none;
+        }
+
+        /* أنيميشن */
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(12px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinner {
+            width: 18px; height: 18px;
+            border: 2px solid #00000033;
+            border-top-color: #000;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        /* موبايل */
+        @media (max-width: 480px) {
+            .api-key-row { flex-direction: column; }
+            .btn-save { width: 100%; }
         }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>🖥️ بوت قطع البي سي والشاشات 🇸🇦</h1>
-        
-        <div class="input-group">
-            <div class="search-container">
-                <input type="text" id="query" placeholder="ابحث عن معالج، كرت، شاشة..." autocomplete="off">
-                <div id="suggestions" class="suggestions-list"></div>
-            </div>
-            <button class="btn-search" onclick="performSearch()">بحث عن القطعة 🔍</button>
+    <div class="container">
+
+        <!-- الهيدر -->
+        <div class="header">
+            <div class="badge">🇸🇦 السوق السعودي</div>
+            <h1>🖥️ بوت قطع <span>البي سي</span> والشاشات</h1>
+            <p>ابحث عن أي قطعة أو شاشة وشوف أسعارها من المتاجر السعودية</p>
         </div>
 
-        <div class="upload-area" onclick="document.getElementById('imageFile').click()">
-            📷 اضغط هنا لرفع صورة القطعة للبحث (OCR)
-            <input type="file" id="imageFile" accept="image/*" style="display:none">
-            <p id="status" style="font-size:12px; color:#4ade80; margin-top:5px; margin-bottom:0;"></p>
+        <!-- إعداد الـ API Key -->
+        <div class="card" style="animation-delay:0.1s">
+            <div class="card-title">إعداد Serper API Key</div>
+            <div class="api-key-row">
+                <div class="input-wrap" style="flex:1">
+                    <input type="password" id="apiKey" placeholder="أدخل API Key هنا...">
+                    <button class="btn-eye" onclick="toggleKey()" title="إظهار/إخفاء">👁</button>
+                </div>
+                <button class="btn-save" onclick="saveKey()">حفظ ✓</button>
+            </div>
+            <div class="key-status" id="keyStatus">✅ تم حفظ الـ Key بنجاح</div>
         </div>
-        
-        <div id="results">النتائج ستظهر هنا...</div>
+
+        <!-- البحث -->
+        <div class="card" style="animation-delay:0.2s">
+            <div class="card-title">البحث عن قطعة أو شاشة</div>
+            <div class="search-wrap">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="query" placeholder="مثال: RTX 4070، i5-13400F، شاشة OLED..." autocomplete="off">
+                <div id="suggestions" class="suggestions-list"></div>
+            </div>
+
+            <!-- فلاتر المتاجر -->
+            <div style="margin-top:14px">
+                <div class="card-title" style="margin-bottom:10px">تصفية حسب المتجر</div>
+                <div class="filter-row" id="filterRow">
+                    <button class="filter-chip active" data-site="">كل المتاجر</button>
+                    <button class="filter-chip" data-site="extra.com">Extra</button>
+                    <button class="filter-chip" data-site="jarir.com">جرير</button>
+                    <button class="filter-chip" data-site="amazon.sa">أمازون</button>
+                    <button class="filter-chip" data-site="noon.com">نون</button>
+                    <button class="filter-chip" data-site="xcite.com">إكسايت</button>
+                </div>
+            </div>
+
+            <button class="btn-primary" id="searchBtn" onclick="performSearch()">
+                <span id="btnText">بحث عن القطعة</span>
+                <span id="btnIcon">🔍</span>
+            </button>
+        </div>
+
+        <!-- رفع صورة OCR -->
+        <div class="card" style="animation-delay:0.3s">
+            <div class="card-title">رفع صورة القطعة (OCR)</div>
+            <div class="upload-area" onclick="document.getElementById('imageFile').click()">
+                <div class="icon">📷</div>
+                اضغط هنا لرفع صورة وسيتم استخراج اسم القطعة تلقائياً
+                <input type="file" id="imageFile" accept="image/*" style="display:none">
+                <div id="status"></div>
+            </div>
+        </div>
+
+        <!-- النتائج -->
+        <div class="card" style="animation-delay:0.4s">
+            <div class="card-title">النتائج</div>
+            <div class="loading-bar" id="loadingBar"></div>
+            <div id="results">
+                <div class="state-box">
+                    <div class="icon">🖥️</div>
+                    <p>ابحث عن أي قطعة أو شاشة وستظهر النتائج من المتاجر السعودية هنا</p>
+                </div>
+            </div>
+        </div>
+
     </div>
 
     <script>
+        // ====== البيانات ======
         const pcPartsData = [
-            "i5-12400F", "i5-13400F", "i7-13700K", "i7-14700K", "i9-14900K",
-            "Ryzen 5 5600X", "Ryzen 7 7800X3D",
-            "RTX 3060", "RTX 4060", "RTX 4070 Super", "RTX 4080 Super", "RTX 4090",
-            "شاشة OLED جيمنج", "شاشة Mini LED", "شاشة TCL 4K", "شاشة 2K 180Hz",
-            "شاشة Asus Rog", "شاشة Samsung Odyssey",
-            "SSD 1TB", "SSD 2TB Samsung", "RAM 32GB DDR5"
+            // معالجات إنتل
+            "i3-12100F", "i5-12400F", "i5-12600K", "i5-13400F", "i5-13600K",
+            "i7-12700K", "i7-13700K", "i7-14700K", "i9-13900K", "i9-14900K",
+            // معالجات AMD
+            "Ryzen 5 5600", "Ryzen 5 5600X", "Ryzen 5 7600X",
+            "Ryzen 7 5700X", "Ryzen 7 7700X", "Ryzen 7 7800X3D",
+            "Ryzen 9 7900X", "Ryzen 9 7950X",
+            // كروت NVIDIA
+            "RTX 3060", "RTX 3060 Ti", "RTX 3070", "RTX 3080",
+            "RTX 4060", "RTX 4060 Ti", "RTX 4070", "RTX 4070 Super",
+            "RTX 4070 Ti", "RTX 4080", "RTX 4080 Super", "RTX 4090",
+            // كروت AMD
+            "RX 6600", "RX 6700 XT", "RX 6800 XT", "RX 7600",
+            "RX 7700 XT", "RX 7800 XT", "RX 7900 XTX",
+            // شاشات
+            "شاشة OLED جيمنج", "شاشة Mini LED", "شاشة 4K 144Hz",
+            "شاشة 2K 165Hz", "شاشة 2K 180Hz", "شاشة 1080p 240Hz",
+            "شاشة Asus ROG", "شاشة Samsung Odyssey",
+            "شاشة LG UltraGear", "شاشة Dell G27",
+            "شاشة MSI MAG", "شاشة BenQ Zowie",
+            // SSD وذاكرة
+            "SSD 1TB NVMe", "SSD 2TB Samsung 990 Pro",
+            "SSD 1TB WD Black", "RAM 32GB DDR5 6000MHz",
+            "RAM 16GB DDR4 3200MHz", "RAM 64GB DDR5",
+            // لوحات أم
+            "B650 motherboard", "Z790 motherboard", "B760 motherboard",
+            // تبريد
+            "AIO 360mm", "Noctua NH-D15", "DeepCool AK620"
         ];
 
+        // ====== الـ API Key ======
+        function saveKey() {
+            const key = document.getElementById('apiKey').value.trim();
+            if (!key) return alert('أدخل الـ API Key أولاً');
+            localStorage.setItem('serper_key', key);
+            const status = document.getElementById('keyStatus');
+            status.style.display = 'block';
+            setTimeout(() => status.style.display = 'none', 3000);
+        }
+
+        function toggleKey() {
+            const input = document.getElementById('apiKey');
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        // تحميل الـ Key المحفوظ
+        window.addEventListener('load', () => {
+            const saved = localStorage.getItem('serper_key');
+            if (saved) {
+                document.getElementById('apiKey').value = saved;
+            }
+        });
+
+        // ====== الاقتراحات ======
         const queryInput = document.getElementById('query');
         const suggestionsDiv = document.getElementById('suggestions');
 
         queryInput.addEventListener('input', () => {
-            const value = queryInput.value.toLowerCase().trim();
+            const val = queryInput.value.toLowerCase().trim();
             suggestionsDiv.innerHTML = '';
-            if (!value) { suggestionsDiv.style.display = 'none'; return; }
-            const filteredParts = pcPartsData.filter(part => part.toLowerCase().includes(value));
-            if (filteredParts.length > 0) {
-                filteredParts.forEach(part => {
+            if (!val || val.length < 2) { suggestionsDiv.style.display = 'none'; return; }
+
+            const filtered = pcPartsData.filter(p => p.toLowerCase().includes(val)).slice(0, 8);
+            if (filtered.length > 0) {
+                filtered.forEach(part => {
                     const item = document.createElement('div');
                     item.className = 'suggestion-item';
                     item.innerText = part;
@@ -175,54 +609,127 @@
                     suggestionsDiv.appendChild(item);
                 });
                 suggestionsDiv.style.display = 'block';
-            } else { suggestionsDiv.style.display = 'none'; }
+            } else {
+                suggestionsDiv.style.display = 'none';
+            }
         });
 
-        document.addEventListener('click', (e) => {
-            if (e.target !== queryInput) { suggestionsDiv.style.display = 'none'; }
+        queryInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') { suggestionsDiv.style.display = 'none'; performSearch(); }
         });
 
+        document.addEventListener('click', e => {
+            if (e.target !== queryInput) suggestionsDiv.style.display = 'none';
+        });
+
+        // ====== فلاتر المتاجر ======
+        let selectedSite = '';
+        document.getElementById('filterRow').addEventListener('click', e => {
+            const chip = e.target.closest('.filter-chip');
+            if (!chip) return;
+            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            selectedSite = chip.dataset.site;
+        });
+
+        // ====== شريط التحميل ======
+        function setLoading(val) {
+            document.getElementById('loadingBar').style.width = val + '%';
+        }
+
+        // ====== البحث الرئيسي ======
         async function performSearch() {
-            const query = queryInput.value;
+            const query = queryInput.value.trim();
+            const apiKey = localStorage.getItem('serper_key') || document.getElementById('apiKey').value.trim();
             const resDiv = document.getElementById('results');
+            const btn = document.getElementById('searchBtn');
+
             if (!query) return;
-            resDiv.innerHTML = "جاري جلب أفضل الأسعار... ⏳";
-            
+            if (!apiKey) {
+                resDiv.innerHTML = `<div class="state-box"><div class="icon">🔑</div><p>أدخل API Key الخاص بك أولاً من الخانة أعلاه</p></div>`;
+                return;
+            }
+
+            // حالة التحميل
+            btn.disabled = true;
+            document.getElementById('btnText').innerText = 'جاري البحث...';
+            document.getElementById('btnIcon').innerHTML = '<div class="spinner"></div>';
+            resDiv.innerHTML = '';
+            setLoading(30);
+
+            // بناء الاستعلام مع تركيز على السوق السعودي
+            let searchQuery = `${query} سعر السعودية`;
+            if (selectedSite) searchQuery += ` site:${selectedSite}`;
+            else searchQuery += ' (extra.com OR jarir.com OR amazon.sa OR noon.com OR xcite.com)';
+
             try {
-                const res = await fetch('/api/search', {
+                setLoading(60);
+                const res = await fetch('https://google.serper.dev/search', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ query })
+                    headers: {
+                        'X-API-KEY': apiKey,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        q: searchQuery,
+                        gl: 'sa',
+                        hl: 'ar',
+                        num: 10
+                    })
                 });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.message || 'خطأ في الـ API');
+                }
+
                 const data = await res.json();
-                resDiv.innerHTML = "";
-                
-                if (data.results && data.results.length > 0) {
-                    data.results.forEach(item => {
+                setLoading(100);
+
+                const items = data.organic || [];
+
+                if (items.length === 0) {
+                    resDiv.innerHTML = `<div class="state-box"><div class="icon">😔</div><p>ما لقينا نتائج لـ "${query}"<br>جرب كلمات أخرى أو غير الفلتر</p></div>`;
+                } else {
+                    resDiv.innerHTML = '';
+                    items.forEach((item, i) => {
+                        const domain = new URL(item.link).hostname.replace('www.', '');
                         resDiv.innerHTML += `
-                            <div class="result-item">
-                                <strong style="color: #4ade80; display:block; margin-bottom:5px;">${item.title}</strong>
-                                <p style="font-size: 13px; color: #cbd5e1; margin: 8px 0; line-height:1.4;">${item.snippet}</p>
-                                <a href="${item.link}" target="_blank" class="result-link">انتقل للموقع وعرض السعر 🔗</a>
+                            <div class="result-card" style="animation-delay:${i * 0.05}s">
+                                <div class="result-num">نتيجة ${i + 1}</div>
+                                <div class="result-title">${item.title}</div>
+                                <div class="result-snippet">${item.snippet || 'لا يوجد وصف'}</div>
+                                <div class="result-footer">
+                                    <span class="result-source">${domain}</span>
+                                    <a href="${item.link}" target="_blank" class="result-link">عرض السعر 🔗</a>
+                                </div>
                             </div>`;
                     });
-                } else { 
-                    resDiv.innerText = "لم يتم العثور على نتائج. جرب كلمات بحث أخرى أو اختصر الاسم."; 
                 }
+
             } catch (err) {
-                resDiv.innerText = "حدث خطأ أثناء الاتصال بالسيرفر.";
+                resDiv.innerHTML = `<div class="state-box"><div class="icon">⚠️</div><p>خطأ: ${err.message}<br><small>تأكد من صحة الـ API Key</small></p></div>`;
+            } finally {
+                btn.disabled = false;
+                document.getElementById('btnText').innerText = 'بحث عن القطعة';
+                document.getElementById('btnIcon').innerText = '🔍';
+                setTimeout(() => setLoading(0), 800);
             }
         }
 
+        // ====== OCR ======
         document.getElementById('imageFile').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            document.getElementById('status').innerText = "جاري تحليل الصورة... ☕";
-            Tesseract.recognize(file, 'eng').then(({ data: { text } }) => {
-                queryInput.value = text.trim();
-                document.getElementById('status').innerText = "تم استخراج النص!";
+            document.getElementById('status').innerText = 'جاري تحليل الصورة... ☕';
+            try {
+                const { data: { text } } = await Tesseract.recognize(file, 'eng');
+                queryInput.value = text.trim().split('\n')[0]; // أول سطر فقط
+                document.getElementById('status').innerText = '✅ تم استخراج النص!';
                 performSearch();
-            });
+            } catch {
+                document.getElementById('status').innerText = '❌ فشل تحليل الصورة';
+            }
         });
     </script>
 </body>
