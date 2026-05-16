@@ -231,6 +231,21 @@
 
         #status { font-size: 12px; color: var(--green); margin-top: 6px; min-height: 18px; }
 
+        /* تصميم بطاقة التصنيف الذكي (Category Badge) */
+        .category-badge {
+            display: none;
+            background: var(--surface2);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-align: right;
+            animation: fadeUp 0.3s ease both;
+        }
+
         .filter-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 
         .filter-chip {
@@ -352,11 +367,13 @@
             <div class="card-title">البحث بواسطة صورة القطعة (OCR)</div>
             <div class="upload-area" onclick="document.getElementById('imageFile').click()">
                 <div class="icon">📷</div>
-                اضغط هنا لرفع صورة وسيتم استخراج اسم القطعة تلقائياً
+                اضغط هنا لرفع صورة وسيتم استخراج اسم القطعة وتصنيفها تلقائياً
                 <input type="file" id="imageFile" accept="image/*" style="display:none">
                 <div id="status"></div>
             </div>
         </div>
+
+        <div id="categoryCard" class="category-badge"></div>
 
         <div class="card">
             <div class="card-title">نتائج البحث والأسعار</div>
@@ -385,6 +402,36 @@
 
         const queryInput = document.getElementById('query');
         const suggestionsDiv = document.getElementById('suggestions');
+        const categoryCard = document.getElementById('categoryCard');
+
+        // خوارزمية التصنيف الذكي بناءً على النص المستخرج من الصورة
+        function classifyText(text) {
+            const lowerText = text.toLowerCase();
+            
+            if (lowerText.includes('intel') || lowerText.includes('ryzen') || lowerText.includes('core i') || /i[3579]-/.test(lowerText) || lowerText.includes('amd cpu')) {
+                return "🧠 تصنيف القطعة: معالج (CPU)";
+            }
+            if (lowerText.includes('rtx') || lowerText.includes('gtx') || lowerText.includes('radeon') || lowerText.includes('gpu') || lowerText.includes('nvidia') || lowerText.includes('rx ')) {
+                return "🎮 تصنيف القطعة: كرت شاشة (GPU)";
+            }
+            if (lowerText.includes('ram') || lowerText.includes('ddr4') || lowerText.includes('ddr5') || lowerText.includes('corsair vengeance') || lowerText.includes('kingston fury')) {
+                return "⚡ تصنيف القطعة: ذاكرة عشوائية (RAM)";
+            }
+            if (lowerText.includes('ssd') || lowerText.includes('nvme') || lowerText.includes('samsung 990') || lowerText.includes('crucial') || lowerText.includes('تخزين') || lowerText.includes('hdd')) {
+                return "💾 تصنيف القطعة: وحدة تخزين (SSD / HDD)";
+            }
+            if (lowerText.includes('شاشة') || lowerText.includes('monitor') || lowerText.includes('oled') || lowerText.includes('hz') || lowerText.includes('odyssey') || lowerText.includes('ultragear')) {
+                return "📺 تصنيف القطعة: شاشة عرض (Monitor)";
+            }
+            if (lowerText.includes('motherboard') || lowerText.includes('لوحة') || lowerText.includes('b650') || lowerText.includes('z790') || lowerText.includes('b760')) {
+                return "🔌 تصنيف القطعة: لوحة أم (Motherboard)";
+            }
+            if (lowerText.includes('power supply') || lowerText.includes('psu') || lowerText.includes('watt') || lowerText.includes('واط')) {
+                return "🔋 تصنيف القطعة: مزود طاقة (Power Supply)";
+            }
+            
+            return "📦 تصنيف القطعة: ملحقات / قطعة منوعة";
+        }
 
         queryInput.addEventListener('input', () => {
             const val = queryInput.value.toLowerCase().trim();
@@ -400,6 +447,7 @@
                     item.addEventListener('click', () => {
                         queryInput.value = part;
                         suggestionsDiv.style.display = 'none';
+                        categoryCard.style.display = 'none'; // إخفاء التصنيف عند البحث العادي المباشر
                         performSearch();
                     });
                     suggestionsDiv.appendChild(item);
@@ -491,13 +539,31 @@
         document.getElementById('imageFile').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            document.getElementById('status').innerText = 'جاري تحليل الصورة... ☕';
+            document.getElementById('status').innerText = 'جاري تحليل الصورة واستخراج الكاتاغوري... ☕';
+            categoryCard.style.display = 'none';
+
             try {
                 const { data: { text } } = await Tesseract.recognize(file, 'eng');
-                queryInput.value = text.trim().split('\n')[0]; 
-                document.getElementById('status').innerText = '✅ تم استخراج النص!';
-                performSearch();
-            } catch { document.getElementById('status').innerText = '❌ فشل تحليل الصورة'; }
+                const cleanText = text.trim();
+                
+                if (cleanText) {
+                    // 1. وضع الكلمة الأولى في حقل البحث
+                    queryInput.value = cleanText.split('\n')[0]; 
+                    document.getElementById('status').innerText = '✅ تم قراءة الصورة بنجاح!';
+                    
+                    // 2. تفعيل الكاتاغوري الذكي وعرضه للمستخدم
+                    const categoryResult = classifyText(cleanText);
+                    categoryCard.innerText = categoryResult;
+                    categoryCard.style.display = 'block';
+                    
+                    // 3. البحث التلقائي عن الأسعار
+                    performSearch();
+                } else {
+                    document.getElementById('status').innerText = '⚠️ لم يتم العثور على نص واضح في الصورة.';
+                }
+            } catch { 
+                document.getElementById('status').innerText = '❌ فشل تحليل الصورة'; 
+            }
         });
     </script>
 </body>
