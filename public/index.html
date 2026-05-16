@@ -18,6 +18,7 @@
             --text: #e2eaf5;
             --muted: #6b7fa3;
             --accent: #00b4d8;
+            --purple: #bf5af2;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -81,10 +82,25 @@
         .suggestion-item:hover { background: var(--green-dim); color: var(--green); }
         .suggestion-item::before { content: '⌕'; color: var(--muted); font-size: 16px; }
 
-        /* ستايل قائمة السجل (History Chips) */
         .history-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
         .history-chip { background: #141c2e; border: 1px dashed var(--border); color: var(--muted); font-size: 12px; padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
         .history-chip:hover { border-color: var(--accent); color: var(--accent); background: #00b4d811; }
+
+        /* ستايل بطاقة التوصية الذكية الفخمة (Recommendation Box) */
+        .recommendation-box {
+            display: none;
+            background: #bf5af210;
+            border: 1px solid var(--purple);
+            color: #d17eff;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 16px;
+            text-align: right;
+            box-shadow: 0 0 10px #bf5af211;
+            animation: fadeUp 0.4s ease both;
+        }
 
         .btn-primary {
             width: 100%; background: var(--green); color: #000; border: none; font-family: 'IBM Plex Sans Arabic', sans-serif;
@@ -135,6 +151,8 @@
             <h1>🖥️ ابحث عن <span>قطعتك</span></h1>
             <p>رادارك الذكي لمقارنة أسعار قطع البي سي والشاشات في المتاجر المحلية</p>
         </div>
+
+        <div id="recommendationBox" class="recommendation-box"></div>
 
         <div class="card">
             <div class="card-title">خيارات البحث المباشر</div>
@@ -196,9 +214,9 @@
         const pcPartsData = [
             "i3-12100F", "i5-12400F", "i5-12600K", "i5-13400F", "i5-13600K",
             "i7-12700K", "i7-13700K", "i7-14700K", "i9-13900K", "i9-14900K",
-            "Ryzen 5 5600", "Ryzen 5 5600X", "Ryzen 5 7600X", "Ryzen 7 7800X3D",
+            "Ryzen 5 5600", "Ryzen 5 5600X", "Ryzen 7 7800X3D",
             "RTX 3060", "RTX 4060", "RTX 4070 Super", "RTX 4080 Super", "RTX 4090",
-            "شاشة OLED جيمنج", "شاشة Mini LED", "شاشة 4K 144Hz", "شاشة 2K 180Hz"
+            "شاشة OLED جيمنج", "شاشة Mini LED", "شاشة 4K 144Hz"
         ];
 
         const queryInput = document.getElementById('query');
@@ -206,6 +224,7 @@
         const categoryCard = document.getElementById('categoryCard');
         const historyContainer = document.getElementById('historyContainer');
         const historySection = document.getElementById('historySection');
+        const recommendationBox = document.getElementById('recommendationBox');
 
         function classifyText(text) {
             const lowerText = text.toLowerCase().trim();
@@ -217,20 +236,57 @@
             return "📦 تصنيف القطعة: ملحقات / قطعة منوعة";
         }
 
+        // ====== هندسة النظام الذكي لفهم خيارات المستخدم (User Intent Logic) ======
+        function updateProfileAndRecommend(query) {
+            const lower = query.toLowerCase();
+            
+            // تصنيف اهتمام المستخدم بناءً على قوّة القطعة السابقة
+            if (lower.includes('4090') || lower.includes('4080') || lower.includes('i9') || lower.includes('i7-14') || lower.includes('7800x3d') || lower.includes('oled')) {
+                localStorage.setItem('user_tier', 'high-end');
+            } else if (lower.includes('4060') || lower.includes('3060') || lower.includes('i5') || lower.includes('i3') || lower.includes('5600')) {
+                localStorage.setItem('user_tier', 'budget');
+            }
+            
+            checkRecommendations(lower);
+        }
+
+        function checkRecommendations(currentQueryLower) {
+            const tier = localStorage.getItem('user_tier');
+            if (!tier) return;
+
+            // إذا كان يبحث الحين عن كرت أو معالج، نقترح القطعة المكملة بناءً على فئته
+            if (tier === 'budget') {
+                if (currentQueryLower.includes('i5') || currentQueryLower.includes('i3')) {
+                    recommendationBox.innerHTML = "🎯 <b>اقتراح ذكي:</b> بما أنك اخترت معالج اقتصادي، نقترح لك كروت مثل <b>RTX 4060</b> لتجنب عنق الزجاجة وتوفير ميزانيتك.";
+                    recommendationBox.style.display = 'block';
+                } else if (currentQueryLower.includes('4060') || currentQueryLower.includes('3060')) {
+                    recommendationBox.innerHTML = "🎯 <b>اقتراح ذكي:</b> هذا الكرت ممتاز جداً للتجميعات الاقتصادية! يناسبه معالج <b>i5-13400F</b> أو <b>Ryzen 5 5600</b>.";
+                    recommendationBox.style.display = 'block';
+                } else {
+                    recommendationBox.style.display = 'none';
+                }
+            } else if (tier === 'high-end') {
+                if (currentQueryLower.includes('i9') || currentQueryLower.includes('7800x3d')) {
+                    recommendationBox.innerHTML = "👑 <b>اقتراح التجميعات الراقية:</b> اخترت وحش معالجة! تجميعتك تستحق كرت قوي جداً مثل <b>RTX 4080 Super</b> أو <b>RTX 4090</b> وعش التجربة الكاملة.";
+                    recommendationBox.style.display = 'block';
+                } else if (currentQueryLower.includes('4090') || currentQueryLower.includes('4080')) {
+                    recommendationBox.innerHTML = "👑 <b>اقتراح التجميعات الراقية:</b> هذا الكرت الجبار يحتاج معالج خارق يشغله بكامل قوته مثل <b>Ryzen 7 7800X3D</b> أسرع معالج ألعاب في العالم!";
+                    recommendationBox.style.display = 'block';
+                } else {
+                    recommendationBox.style.display = 'none';
+                }
+            }
+        }
+
         // ====== هندسة إدارة سجل البحث (History Logic) ======
-        const EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 ساعة بالميلي ثانية
+        const EXPIRY_TIME = 24 * 60 * 60 * 1000;
 
         function saveToHistory(keyword) {
             if (!keyword) return;
             let searchHistory = JSON.parse(localStorage.getItem('pc_search_history')) || [];
-            
-            // فلترة القائمة لإزالة الكلمة إذا كانت متكررة، ثم إضافتها في البداية مع الوقت الحالي
             searchHistory = searchHistory.filter(item => item.text !== keyword);
             searchHistory.unshift({ text: keyword, timestamp: Date.now() });
-            
-            // قصر السجل على آخر 5 عمليات بحث فقط
             if (searchHistory.length > 5) searchHistory.pop();
-            
             localStorage.setItem('pc_search_history', JSON.stringify(searchHistory));
             renderHistory();
         }
@@ -238,15 +294,10 @@
         function renderHistory() {
             let searchHistory = JSON.parse(localStorage.getItem('pc_search_history')) || [];
             const now = Date.now();
-
-            // فلترة وحذف الكلمات التي انتهت صلاحيتها (أقدم من 24 ساعة)
             searchHistory = searchHistory.filter(item => (now - item.timestamp) < EXPIRY_TIME);
             localStorage.setItem('pc_search_history', JSON.stringify(searchHistory));
 
-            if (searchHistory.length === 0) {
-                historySection.style.display = 'none';
-                return;
-            }
+            if (searchHistory.length === 0) { historySection.style.display = 'none'; return; }
 
             historyContainer.innerHTML = '';
             searchHistory.forEach(item => {
@@ -263,8 +314,12 @@
             historySection.style.display = 'block';
         }
 
-        // تشغيل عرض السجل فور تحميل الصفحة وتصفير المنتهي تلقائياً
-        window.addEventListener('load', renderHistory);
+        window.addEventListener('load', () => {
+            renderHistory();
+            // فحص التوصيات فور دخول الصفحة بناء على آخر عملية في الذاكرة
+            const lastSearch = JSON.parse(localStorage.getItem('pc_search_history'))?.[0]?.text || '';
+            if(lastSearch) checkRecommendations(lastSearch.toLowerCase());
+        });
 
         queryInput.addEventListener('input', () => {
             const val = queryInput.value.toLowerCase().trim();
@@ -299,8 +354,8 @@
             const btn = document.getElementById('searchBtn');
             if (!query) return;
 
-            // حفظ الكلمة الحالية في السجل
             saveToHistory(query);
+            updateProfileAndRecommend(query); // تحديث البروفايل الذكي وعرض الاقتراحات المناسبة للمستخدم
 
             btn.disabled = true;
             document.getElementById('btnText').innerText = 'جاري البحث...';
