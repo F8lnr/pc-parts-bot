@@ -72,7 +72,7 @@
         .card-title { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
         .card-title::before { content: ''; width: 3px; height: 14px; background: var(--green); border-radius: 2px; display: block; }
 
-        .search-wrap { position: relative; }
+        .search-wrap { position: relative; z-index: 50; }
         #query { padding-left: 44px; font-size: 15px; }
 
         input[type="text"] {
@@ -182,12 +182,8 @@
         .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; animation: fadeUp 0.3s ease both; }
         .result-card:hover { border-color: #2a3d5a; }
         .result-num { font-size: 10px; font-weight: 700; color: var(--green); letter-spacing: 1px; }
-        .result-title { font-size: 15px; font-weight: 600; color: #fff; line-height: 1.4; text-align: right; }
-        .result-snippet { font-size: 13px; color: var(--muted); line-height: 1.6; text-align: right; }
-        
-        /* شريط السعر النيوني الفخم */
-        .price-tag { background: #00e67615; border: 1px solid var(--green); color: var(--green); padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 700; display: inline-block; margin-top: 4px; text-align: right; box-shadow: 0 0 10px var(--green-glow); }
-        
+        .result-title { font-size: 15px; font-weight: 600; color: #fff; line-height: 1.4; }
+        .result-snippet { font-size: 13px; color: var(--muted); line-height: 1.6; }
         .result-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; flex-wrap: wrap; gap: 8px; }
         .result-source { font-size: 11px; color: #3a5070; direction: ltr; }
         .btn-add-to-build { background: var(--surface2); border: 1px solid var(--accent); color: var(--accent); padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; font-family: inherit; transition: all 0.2s; }
@@ -195,6 +191,8 @@
         .btn-add-to-build.added { border-color: var(--green); color: var(--green); background: var(--green-dim); }
         .result-link { background: var(--green-dim); border: 1px solid var(--green); color: var(--green); text-decoration: none; padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; transition: background 0.2s; }
         .result-link:hover { background: #00e67633; }
+
+        .price-tag { background: #00e67615; border: 1px solid var(--green); color: var(--green); padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 700; display: inline-block; margin-top: 4px; text-align: right; box-shadow: 0 0 10px var(--green-glow); }
 
         .active-slot-banner { background: var(--green-dim); border: 1px solid var(--green); color: var(--green); padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 12px; text-align: center; display: none; animation: fadeUp 0.3s ease both; }
 
@@ -337,6 +335,16 @@ const pcPartsData = [
     "Power Supply 750W","Power Supply 850W","AIO 360mm","Noctua NH-D15"
 ];
 
+// ====== اقتراحات التجميعة الذكية (الفئات) ======
+const categorySuggestions = {
+    'CPU': ["i5-13400F", "i7-14700K", "Ryzen 5 7600X", "Ryzen 7 7800X3D", "Ryzen 5 5600"],
+    'GPU': ["RTX 4060", "RTX 4070 Super", "RTX 4080 Super", "RX 7800 XT", "RX 7900 XTX"],
+    'Motherboard': ["B650 motherboard", "Z790 motherboard", "B760 motherboard", "X670 motherboard"],
+    'RAM': ["RAM 16GB DDR4", "RAM 32GB DDR5 6000MHz", "RAM 64GB DDR5"],
+    'SSD': ["SSD 1TB NVMe", "SSD 2TB Samsung 990 Pro", "SSD WD Black 1TB"],
+    'PSU': ["Power Supply 650W", "Power Supply 750W", "Power Supply 850W", "Power Supply 1000W"]
+};
+
 // ====== قواعد الأداء ======
 const gpuScore = {
     'rtx 3060':4,'rtx 3060 ti':5,'rtx 3070':6,'rtx 3080':7,
@@ -441,7 +449,7 @@ function checkCompatibility(build) {
     return results;
 }
 
-// ====== إدارة التجميعة ======
+// ====== إدارة التجميعة والبحث التلقائي ======
 const slotMap = {
     'CPU':         {id:'cpu',  label:'المعالج (CPU)',          hint:'i5-13400F أو Ryzen 5 7600X'},
     'GPU':         {id:'gpu',  label:'كرت الشاشة (GPU)',        hint:'RTX 4060 أو RX 7800 XT'},
@@ -467,25 +475,45 @@ function prepareBuildSearch(partType) {
         oldBtn?.classList.remove('searching');
         oldBtn.innerText = buildData[slotMap[currentActivePartSlot].id] ? '✅ تم' : 'ابحث';
     }
+    
     currentActivePartSlot = partType;
     const slot = slotMap[partType];
+    
     document.getElementById(`row-${slot.id}`).classList.add('active-slot');
     const btn = document.getElementById(`btn-${slot.id}`);
     btn.classList.add('searching');
     btn.innerText = '🔍 نشط';
+    
     activeBanner.style.display = 'block';
-    activeBanner.innerHTML = `🎯 تبحث الآن لـ <b>${slot.label}</b> — ابحث ثم اضغط "أضف للتجميعة"`;
+    activeBanner.innerHTML = `🎯 تبحث الآن لـ <b>${slot.label}</b> — اختر من الاقتراحات بالأسفل ليتم البحث عنها فوراً`;
+    
+    queryInput.value = ''; // تصفير حقل البحث
     queryInput.placeholder = `ابحث عن: ${slot.hint}`;
     queryInput.focus();
     queryInput.scrollIntoView({behavior:'smooth', block:'center'});
+
+    // عرض الاقتراحات التلقائية المخصصة لهذا القسم فوراً بدون كتابة
+    suggestionsDiv.innerHTML = '';
+    if (categorySuggestions[partType]) {
+        categorySuggestions[partType].forEach(part => {
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+            item.innerText = part;
+            item.addEventListener('click', () => {
+                queryInput.value = part;
+                suggestionsDiv.style.display = 'none';
+                performSearch(); // يبحث فوراً بعد اختيار اليوزر للاقتراح
+            });
+            suggestionsDiv.appendChild(item);
+        });
+        suggestionsDiv.style.display = 'block';
+    }
 }
 
-// دالة مصلحة: تأخذ العنوان الصريح والسعر الصريح الممرر من الواجهة
 function addPartToBuild(title, priceStr, btnEl) {
     if (!currentActivePartSlot) { alert("اضغط على 'ابحث' بجانب القطعة أولاً"); return; }
     const slot = slotMap[currentActivePartSlot];
     buildData[slot.id] = title;
-    
     document.getElementById(`selected-${slot.id}`).innerText = title;
     document.getElementById(`selected-${slot.id}`).classList.add('chosen');
     document.getElementById(`row-${slot.id}`).classList.add('has-part');
@@ -650,7 +678,7 @@ function renderHistory() {
 }
 window.addEventListener('load', renderHistory);
 
-// ====== الاقتراحات ======
+// ====== الاقتراحات عند الكتابة ======
 queryInput.addEventListener('input', () => {
     const val = queryInput.value.toLowerCase().trim();
     suggestionsDiv.innerHTML = '';
@@ -668,7 +696,7 @@ queryInput.addEventListener('input', () => {
     } else { suggestionsDiv.style.display = 'none'; }
 });
 queryInput.addEventListener('keydown', e => { if (e.key === 'Enter') { suggestionsDiv.style.display = 'none'; performSearch(); } });
-document.addEventListener('click', e => { if (e.target !== queryInput) suggestionsDiv.style.display = 'none'; });
+document.addEventListener('click', e => { if (e.target !== queryInput && !e.target.classList.contains('btn-add-part')) suggestionsDiv.style.display = 'none'; });
 
 // ====== فلتر المتاجر ======
 let selectedSite = '';
@@ -725,9 +753,8 @@ async function performSearch() {
                 let domain = 'متجر سعودي';
                 try { domain = new URL(item.link).hostname.replace('www.',''); } catch(e){}
                 
-                // تنظيف العنوان الممرر للـ inline Javascript لعدم حدوث Syntax Error
                 const safeTitle = item.title.replace(/'/g, "\\'").replace(/"/g, '\\"');
-                const safePrice = item.price.replace(/'/g, "\\'").replace(/"/g, '\\"');
+                const safePrice = item.price ? item.price.replace(/'/g, "\\'").replace(/"/g, '\\"') : "غير محدد";
 
                 const div = document.createElement('div');
                 div.className = 'result-card';
