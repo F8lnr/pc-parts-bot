@@ -159,7 +159,6 @@
         .perf-tier.mid   { background: #ffd60a15; color: var(--yellow); }
         .perf-tier.low   { background: #ff375715; color: var(--red); }
 
-        /* ستايل قائمة اختيار الدقة */
         .res-select { background: var(--surface2); border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 600; outline: none; cursor: pointer; transition: all 0.2s; }
         .res-select:hover, .res-select:focus { border-color: var(--accent); }
 
@@ -185,7 +184,8 @@
         #results { margin-top: 4px; }
         .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; animation: fadeUp 0.3s ease both; }
         .result-card:hover { border-color: #2a3d5a; }
-        .result-num { font-size: 10px; font-weight: 700; color: var(--green); letter-spacing: 1px; }
+        .result-num { font-size: 10px; font-weight: 700; color: var(--green); letter-spacing: 1px; display: flex; align-items: center; gap: 6px; }
+        .cheapest-badge { background: #ffd60a22; color: var(--yellow); border: 1px solid var(--yellow); padding: 2px 6px; border-radius: 4px; font-size: 10px; margin-right: auto; }
         .result-title { font-size: 15px; font-weight: 600; color: #fff; line-height: 1.4; text-align: right; }
         .result-snippet { font-size: 13px; color: var(--muted); line-height: 1.6; text-align: right; }
         
@@ -317,7 +317,7 @@
     <div id="categoryCard" class="category-badge"></div>
 
     <div class="card">
-        <div class="card-title">نتائج البحث</div>
+        <div class="card-title">نتائج البحث المفلترة (من الأرخص للأغلى)</div>
         <div class="loading-bar" id="loadingBar"></div>
         <div id="results">
             <div class="state-box">
@@ -347,7 +347,6 @@ const pcPartsData = [
     "Power Supply 750W","Power Supply 850W","AIO 360mm","Noctua NH-D15"
 ];
 
-// ====== اقتراحات التجميعة الذكية (الفئات) ======
 const categorySuggestions = {
     'CPU': ["i5-13400F", "i7-14700K", "Ryzen 5 7600X", "Ryzen 7 7800X3D", "Ryzen 5 5600"],
     'GPU': ["RTX 4060", "RTX 4070 Super", "RTX 4080 Super", "RX 7800 XT", "RX 7900 XTX"],
@@ -374,7 +373,6 @@ const cpuScore = {
     'ryzen 9 7900x':8,'ryzen 9 7950x':9
 };
 
-// الدقة (res) هنا صارت تعبر عن الجودة فقط (Ultra / Epic) لأن الدقة نتحكم فيها بالـ Dropdown
 const popularGames = [
     { name:"Cyberpunk 2077",     icon:"🌆", quality:"Ultra",  fps:{10:165,9:140,8:120,7:90,6:65,5:50,4:38,3:28,2:20,1:15} },
     { name:"GTA V",             icon:"🚗", quality:"Ultra",  fps:{10:200,9:180,8:160,7:144,6:120,5:100,4:80,3:65,2:50,1:40} },
@@ -470,7 +468,7 @@ const slotMap = {
 
 let currentActivePartSlot = '';
 const buildData = {cpu:'',gpu:'',mobo:'',ram:'',ssd:'',psu:''};
-let currentGlobalTier = 1; // لحفظ الـ tier للألعاب
+let currentGlobalTier = 1; 
 
 const queryInput     = document.getElementById('query');
 const suggestionsDiv = document.getElementById('suggestions');
@@ -586,7 +584,6 @@ function analyzeBuild() {
     const cScore = getScore(cpuScore, buildData.cpu || '');
     currentGlobalTier = Math.max(1, Math.min(10, Math.min(gScore, cScore + 2)));
 
-    // إعادة رسم الألعاب بالدقة الافتراضية
     document.getElementById('resSelector').value = "1";
     renderGamesWithRes();
     
@@ -597,7 +594,7 @@ function analyzeBuild() {
 function renderGamesWithRes() {
     const resMultiplier = parseFloat(document.getElementById('resSelector').value);
     const selectElem = document.getElementById('resSelector');
-    const resName = selectElem.options[selectElem.selectedIndex].text.split(' ')[0]; // يأخذ كلمة FHD أو 2K أو 4K
+    const resName = selectElem.options[selectElem.selectedIndex].text.split(' ')[0]; 
     
     const gamesGrid = document.getElementById('gamesGrid');
     gamesGrid.innerHTML = '';
@@ -606,7 +603,6 @@ function renderGamesWithRes() {
         const baseFps = game.fps[currentGlobalTier];
         const maxBaseFps = game.fps[10];
         
-        // حساب الـ FPS بناءً على المعامل الخاص بالدقة
         const fps = Math.round((baseFps * resMultiplier) * (0.92 + Math.random() * 0.16));
         const scaledMaxFps = Math.round(maxBaseFps * resMultiplier);
         
@@ -737,7 +733,7 @@ document.getElementById('filterRow').addEventListener('click', e => {
 
 function setLoading(val) { document.getElementById('loadingBar').style.width = val + '%'; }
 
-// ====== البحث الجبار ======
+// ====== البحث الجبار (صائد الصفقات - ترتيب من الأرخص) ======
 async function performSearch() {
     const query = queryInput.value.trim();
     const resDiv = document.getElementById('results');
@@ -767,11 +763,21 @@ async function performSearch() {
         if (!res.ok) throw new Error('خطأ في استجابة السيرفر');
         const data = await res.json();
         setLoading(100);
-        const items = data.results || [];
+        let items = data.results || [];
 
         if (!items.length) {
             resDiv.innerHTML = `<div class="state-box"><div class="icon">😔</div><p>ما لقينا نتائج لـ "${query}"<br>جرب كلمات أخرى أو غير الفلتر</p></div>`;
         } else {
+            
+            // خوارزمية الترتيب من الأرخص للأغلى
+            items.sort((a, b) => {
+                const getNum = p => {
+                    if(!p || p === "غير محدد") return 999999;
+                    return parseInt(p.replace(/[^\d]/g, '')) || 999999;
+                };
+                return getNum(a.price) - getNum(b.price);
+            });
+
             resDiv.innerHTML = currentActivePartSlot
                 ? `<div style="background:var(--green-dim);border:1px solid var(--green);color:var(--green);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:12px;text-align:center;">اضغط "أضف للتجميعة" على القطعة اللي تناسبك 👇</div>`
                 : '';
@@ -782,12 +788,17 @@ async function performSearch() {
                 
                 const safeTitle = item.title.replace(/'/g, "\\'").replace(/"/g, '\\"');
                 const safePrice = item.price ? item.price.replace(/'/g, "\\'").replace(/"/g, '\\"') : "غير محدد";
+                
+                // إضافة تاج لأرخص نتيجة إذا كان السعر معروف
+                let numericPrice = parseInt(safePrice.replace(/[^\d]/g, '')) || 0;
+                let isCheapest = (i === 0 && numericPrice > 0);
+                let badgeHTML = isCheapest ? `<span class="cheapest-badge">🥇 أرخص خيار</span>` : '';
 
                 const div = document.createElement('div');
                 div.className = 'result-card';
                 div.style.animationDelay = `${i*0.05}s`;
                 div.innerHTML = `
-                    <div class="result-num">نتيجة ${i+1}</div>
+                    <div class="result-num">نتيجة ${i+1} ${badgeHTML}</div>
                     <div class="result-title">${item.title}</div>
                     <div class="result-snippet">${item.snippet || 'لا يوجد وصف'}</div>
                     <div style="text-align: right; margin-top: 4px;">
