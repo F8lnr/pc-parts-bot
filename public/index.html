@@ -457,14 +457,12 @@
 <body>
     <div class="container">
 
-        <!-- الهيدر -->
         <div class="header">
             <div class="badge">🇸🇦 السوق السعودي</div>
             <h1>🖥️ بوت قطع <span>البي سي</span> والشاشات</h1>
             <p>ابحث عن أي قطعة أو شاشة وشوف أسعارها من المتاجر السعودية</p>
         </div>
 
-        <!-- إعداد الـ API Key -->
         <div class="card" style="animation-delay:0.1s">
             <div class="card-title">إعداد Serper API Key</div>
             <div class="api-key-row">
@@ -477,7 +475,6 @@
             <div class="key-status" id="keyStatus">✅ تم حفظ الـ Key بنجاح</div>
         </div>
 
-        <!-- البحث -->
         <div class="card" style="animation-delay:0.2s">
             <div class="card-title">البحث عن قطعة أو شاشة</div>
             <div class="search-wrap">
@@ -486,7 +483,6 @@
                 <div id="suggestions" class="suggestions-list"></div>
             </div>
 
-            <!-- فلاتر المتاجر -->
             <div style="margin-top:14px">
                 <div class="card-title" style="margin-bottom:10px">تصفية حسب المتجر</div>
                 <div class="filter-row" id="filterRow">
@@ -505,7 +501,6 @@
             </button>
         </div>
 
-        <!-- رفع صورة OCR -->
         <div class="card" style="animation-delay:0.3s">
             <div class="card-title">رفع صورة القطعة (OCR)</div>
             <div class="upload-area" onclick="document.getElementById('imageFile').click()">
@@ -516,7 +511,6 @@
             </div>
         </div>
 
-        <!-- النتائج -->
         <div class="card" style="animation-delay:0.4s">
             <div class="card-title">النتائج</div>
             <div class="loading-bar" id="loadingBar"></div>
@@ -637,63 +631,57 @@
             document.getElementById('loadingBar').style.width = val + '%';
         }
 
-        // ====== البحث الرئيسي ======
+        // ====== البحث الرئيسي المتصل بـ Render ======
         async function performSearch() {
             const query = queryInput.value.trim();
-            const apiKey = localStorage.getItem('serper_key') || document.getElementById('apiKey').value.trim();
             const resDiv = document.getElementById('results');
             const btn = document.getElementById('searchBtn');
 
             if (!query) return;
-            if (!apiKey) {
-                resDiv.innerHTML = `<div class="state-box"><div class="icon">🔑</div><p>أدخل API Key الخاص بك أولاً من الخانة أعلاه</p></div>`;
-                return;
-            }
 
-            // حالة التحميل
+            // حالة التحميل داخل الواجهة
             btn.disabled = true;
             document.getElementById('btnText').innerText = 'جاري البحث...';
             document.getElementById('btnIcon').innerHTML = '<div class="spinner"></div>';
             resDiv.innerHTML = '';
             setLoading(30);
 
-            // بناء الاستعلام مع تركيز على السوق السعودي
+            // بناء استعلام الفلاتر بشكل ذكي
             let searchQuery = `${query} سعر السعودية`;
             if (selectedSite) searchQuery += ` site:${selectedSite}`;
             else searchQuery += ' (extra.com OR jarir.com OR amazon.sa OR noon.com OR xcite.com)';
 
             try {
                 setLoading(60);
-                const res = await fetch('https://google.serper.dev/search', {
+                
+                // تم تعديل هذا الجزء ليتصل بالسيرفر حقك بدلاً من الـ API المباشر لتفادي الـ CORS وحفظ الأمان
+                const res = await fetch('/api/search', {
                     method: 'POST',
                     headers: {
-                        'X-API-KEY': apiKey,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        q: searchQuery,
-                        gl: 'sa',
-                        hl: 'ar',
-                        num: 10
+                        query: searchQuery 
                     })
                 });
 
                 if (!res.ok) {
-                    const err = await res.json();
-                    throw new Error(err.message || 'خطأ في الـ API');
+                    throw new Error('حدث خطأ أثناء جلب البيانات من السيرفر');
                 }
 
                 const data = await res.json();
                 setLoading(100);
 
-                const items = data.organic || [];
+                const items = data.results || [];
 
                 if (items.length === 0) {
                     resDiv.innerHTML = `<div class="state-box"><div class="icon">😔</div><p>ما لقينا نتائج لـ "${query}"<br>جرب كلمات أخرى أو غير الفلتر</p></div>`;
                 } else {
                     resDiv.innerHTML = '';
                     items.forEach((item, i) => {
-                        const domain = new URL(item.link).hostname.replace('www.', '');
+                        let domain = "متجر سعودي";
+                        try { domain = new URL(item.link).hostname.replace('www.', ''); } catch(e){}
+                        
                         resDiv.innerHTML += `
                             <div class="result-card" style="animation-delay:${i * 0.05}s">
                                 <div class="result-num">نتيجة ${i + 1}</div>
@@ -708,7 +696,7 @@
                 }
 
             } catch (err) {
-                resDiv.innerHTML = `<div class="state-box"><div class="icon">⚠️</div><p>خطأ: ${err.message}<br><small>تأكد من صحة الـ API Key</small></p></div>`;
+                resDiv.innerHTML = `<div class="state-box"><div class="icon">⚠️</div><p>خطأ: ${err.message}<br><small>تأكد من أن سيرفر Render شغال وLive</small></p></div>`;
             } finally {
                 btn.disabled = false;
                 document.getElementById('btnText').innerText = 'بحث عن القطعة';
@@ -724,7 +712,7 @@
             document.getElementById('status').innerText = 'جاري تحليل الصورة... ☕';
             try {
                 const { data: { text } } = await Tesseract.recognize(file, 'eng');
-                queryInput.value = text.trim().split('\n')[0]; // أول سطر فقط
+                queryInput.value = text.trim().split('\n')[0]; 
                 document.getElementById('status').innerText = '✅ تم استخراج النص!';
                 performSearch();
             } catch {
