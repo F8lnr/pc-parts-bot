@@ -19,6 +19,9 @@
             --muted: #6b7fa3;
             --accent: #00b4d8;
             --purple: #bf5af2;
+            --red: #ff375f;
+            --yellow: #ffd60a;
+            --orange: #ff9f0a;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -58,24 +61,28 @@
             pointer-events: none;
         }
 
-        .container { width: 100%; max-width: 640px; position: relative; z-index: 1; }
+        .container { width: 100%; max-width: 680px; position: relative; z-index: 1; }
         .header { text-align: center; margin-bottom: 32px; animation: fadeDown 0.6s ease both; }
         .header .badge { display: inline-block; background: var(--green-dim); border: 1px solid var(--green); color: var(--green); font-size: 11px; font-weight: 600; padding: 4px 14px; border-radius: 100px; letter-spacing: 1px; margin-bottom: 14px; }
         .header h1 { font-size: clamp(22px, 5vw, 32px); font-weight: 700; color: #fff; line-height: 1.3; }
         .header h1 span { color: var(--green); }
         .header p { color: var(--muted); font-size: 14px; margin-top: 8px; }
+
         .card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; animation: fadeUp 0.5s ease both; }
         .card-title { font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
         .card-title::before { content: ''; width: 3px; height: 14px; background: var(--green); border-radius: 2px; display: block; }
+
         .search-wrap { position: relative; }
         #query { padding-left: 44px; font-size: 15px; }
 
         input[type="text"] {
             width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text);
-            font-family: 'IBM Plex Sans Arabic', sans-serif; font-size: 14px; padding: 12px 16px; border-radius: 10px; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+            font-family: 'IBM Plex Sans Arabic', sans-serif; font-size: 14px; padding: 12px 16px;
+            border-radius: 10px; outline: none; transition: border-color 0.2s, box-shadow 0.2s;
         }
         input:focus { border-color: var(--green); box-shadow: 0 0 0 3px var(--green-glow); }
         .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 18px; pointer-events: none; }
+
         .suggestions-list { display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; max-height: 200px; overflow-y: auto; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,0.5); }
         .suggestion-item { padding: 11px 16px; cursor: pointer; font-size: 14px; color: var(--text); border-bottom: 1px solid var(--border); transition: background 0.15s; display: flex; align-items: center; gap: 8px; }
         .suggestion-item:last-child { border-bottom: none; }
@@ -83,29 +90,80 @@
         .suggestion-item::before { content: '⌕'; color: var(--muted); font-size: 16px; }
 
         .history-container { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
-        .history-chip { background: #141c2e; border: 1px dashed var(--border); color: var(--muted); font-size: 12px; padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
-        .history-chip:hover { border-color: var(--accent); color: var(--accent); background: #00b4d811; }
+        .history-chip { background: #141c2e; border: 1px dashed var(--border); color: var(--muted); font-size: 12px; padding: 6px 12px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .history-chip:hover { border-color: var(--accent); color: var(--accent); }
 
-        /* ستايل بطاقة التوصية الذكية الفخمة (Recommendation Box) */
-        .recommendation-box {
-            display: none;
-            background: #bf5af210;
-            border: 1px solid var(--purple);
-            color: #d17eff;
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-size: 13px;
-            font-weight: 500;
-            margin-bottom: 16px;
-            text-align: right;
-            box-shadow: 0 0 10px #bf5af211;
-            animation: fadeUp 0.4s ease both;
-        }
+        .recommendation-box { display: none; background: #bf5af210; border: 1px solid var(--purple); color: #d17eff; padding: 12px 16px; border-radius: 12px; font-size: 13px; font-weight: 500; margin-bottom: 16px; text-align: right; animation: fadeUp 0.4s ease both; }
 
-        .btn-primary {
-            width: 100%; background: var(--green); color: #000; border: none; font-family: 'IBM Plex Sans Arabic', sans-serif;
-            font-weight: 700; font-size: 15px; padding: 14px; border-radius: 10px; cursor: pointer; margin-top: 12px; transition: opacity 0.2s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px;
-        }
+        /* ====== بناء التجميعة ====== */
+        .builder-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 10px; }
+        .builder-row { display: flex; justify-content: space-between; align-items: center; background: var(--surface2); border: 1px solid var(--border); padding: 12px 16px; border-radius: 10px; transition: all 0.2s; }
+        .builder-row:hover { border-color: var(--accent); }
+        .builder-row.active-slot { border-color: var(--green); box-shadow: 0 0 0 2px var(--green-glow); }
+        .builder-row.has-part { border-color: #1e3a2a; }
+        .part-info { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+        .part-icon { font-size: 20px; flex-shrink: 0; }
+        .part-name { font-size: 13px; font-weight: 600; }
+        .part-selected { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 170px; }
+        .part-selected.chosen { color: var(--green); }
+        .part-price { font-size: 12px; font-weight: 700; color: var(--green); white-space: nowrap; }
+        .btn-add-part { background: none; border: 1px solid var(--border); color: var(--text); padding: 6px 12px; border-radius: 6px; font-size: 12px; cursor: pointer; font-family: inherit; white-space: nowrap; flex-shrink: 0; transition: all 0.2s; }
+        .btn-add-part:hover { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+        .btn-add-part.searching { border-color: var(--green); color: var(--green); background: var(--green-dim); }
+
+        .total-box { display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+        .total-title { font-size: 14px; font-weight: 700; color: #fff; }
+        .total-price { font-size: 20px; font-weight: 700; color: var(--green); text-shadow: 0 0 10px var(--green-glow); }
+
+        .btn-clear { background: none; border: 1px solid #ff375744; color: #ff6b6b; font-family: inherit; font-size: 12px; padding: 8px 16px; border-radius: 8px; cursor: pointer; margin-top: 12px; width: 100%; transition: all 0.2s; }
+        .btn-clear:hover { background: #ff375711; border-color: var(--red); }
+
+        /* ====== نتائج التوافق ====== */
+        .compat-card { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; animation: fadeUp 0.4s ease both; }
+        .compat-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 14px; }
+        .compat-list { display: flex; flex-direction: column; gap: 8px; }
+        .compat-item { padding: 10px 14px; border-radius: 10px; font-size: 13px; line-height: 1.5; text-align: right; }
+        .compat-item.ok    { background: #00e67610; border: 1px solid #00e67630; color: #00e676; }
+        .compat-item.warn  { background: #ffd60a10; border: 1px solid #ffd60a40; color: var(--yellow); }
+        .compat-item.error { background: #ff375710; border: 1px solid #ff375744; color: var(--red); }
+        .compat-score { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); }
+        .score-label { font-size: 13px; color: var(--muted); }
+        .score-badge { font-size: 13px; font-weight: 700; padding: 6px 16px; border-radius: 8px; }
+        .score-badge.great { background: #00e67620; border: 1px solid var(--green); color: var(--green); }
+        .score-badge.good  { background: #ffd60a15; border: 1px solid var(--yellow); color: var(--yellow); }
+        .score-badge.bad   { background: #ff375715; border: 1px solid var(--red); color: var(--red); }
+
+        /* ====== أداء الألعاب ====== */
+        .games-card { display: none; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px; margin-bottom: 16px; animation: fadeUp 0.4s ease both; }
+        .games-grid { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+        .game-row { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
+        .game-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+        .game-name { font-size: 14px; font-weight: 600; color: #fff; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .game-res  { font-size: 11px; color: var(--muted); white-space: nowrap; }
+        .fps-row { display: flex; gap: 6px; }
+        .fps-item { flex: 1; background: var(--bg); border-radius: 8px; padding: 8px; text-align: center; }
+        .fps-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; }
+        .fps-val { font-size: 16px; font-weight: 700; }
+        .fps-val.ultra { color: var(--green); }
+        .fps-val.high  { color: #4fc3f7; }
+        .fps-val.mid   { color: var(--yellow); }
+        .fps-val.low   { color: var(--red); }
+        .fps-bar { height: 4px; border-radius: 2px; margin-top: 6px; }
+        .fps-bar.ultra { background: var(--green); }
+        .fps-bar.high  { background: #4fc3f7; }
+        .fps-bar.mid   { background: var(--yellow); }
+        .fps-bar.low   { background: var(--red); }
+        .perf-tier { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 5px; }
+        .perf-tier.ultra { background: #00e67620; color: var(--green); }
+        .perf-tier.high  { background: #4fc3f720; color: #4fc3f7; }
+        .perf-tier.mid   { background: #ffd60a15; color: var(--yellow); }
+        .perf-tier.low   { background: #ff375715; color: var(--red); }
+
+        .btn-analyze { width: 100%; background: linear-gradient(135deg, #1e2d47, #141c2e); border: 1px solid var(--accent); color: var(--accent); font-family: 'IBM Plex Sans Arabic', sans-serif; font-weight: 700; font-size: 14px; padding: 13px; border-radius: 10px; cursor: pointer; margin-top: 14px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-analyze:hover { background: #00b4d815; }
+        .btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        .btn-primary { width: 100%; background: var(--green); color: #000; border: none; font-family: 'IBM Plex Sans Arabic', sans-serif; font-weight: 700; font-size: 15px; padding: 14px; border-radius: 10px; cursor: pointer; margin-top: 12px; transition: opacity 0.2s, transform 0.1s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-primary:hover { opacity: 0.9; }
         .btn-primary:active { transform: scale(0.98); }
         .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -121,312 +179,610 @@
         .filter-chip.active { background: var(--green-dim); border-color: var(--green); color: var(--green); }
 
         #results { margin-top: 4px; }
-        .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; animation: fadeUp 0.3s ease both; transition: border-color 0.2s; }
+        .result-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; animation: fadeUp 0.3s ease both; }
         .result-card:hover { border-color: #2a3d5a; }
         .result-num { font-size: 10px; font-weight: 700; color: var(--green); letter-spacing: 1px; }
         .result-title { font-size: 15px; font-weight: 600; color: #fff; line-height: 1.4; text-align: right; }
         .result-snippet { font-size: 13px; color: var(--muted); line-height: 1.6; text-align: right; }
-        .result-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
-        .result-source { font-size: 11px; color: #3a5070; direction: ltr; }
         
+        /* شريط السعر النيوني الفخم */
         .price-tag { background: #00e67615; border: 1px solid var(--green); color: var(--green); padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 700; display: inline-block; margin-top: 4px; text-align: right; box-shadow: 0 0 10px var(--green-glow); }
+        
+        .result-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; flex-wrap: wrap; gap: 8px; }
+        .result-source { font-size: 11px; color: #3a5070; direction: ltr; }
+        .btn-add-to-build { background: var(--surface2); border: 1px solid var(--accent); color: var(--accent); padding: 7px 14px; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+        .btn-add-to-build:hover { background: #00b4d822; }
+        .btn-add-to-build.added { border-color: var(--green); color: var(--green); background: var(--green-dim); }
         .result-link { background: var(--green-dim); border: 1px solid var(--green); color: var(--green); text-decoration: none; padding: 7px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; transition: background 0.2s; }
         .result-link:hover { background: #00e67633; }
+
+        .active-slot-banner { background: var(--green-dim); border: 1px solid var(--green); color: var(--green); padding: 10px 16px; border-radius: 10px; font-size: 13px; font-weight: 600; margin-bottom: 12px; text-align: center; display: none; animation: fadeUp 0.3s ease both; }
+
         .state-box { text-align: center; padding: 40px 20px; color: var(--muted); }
         .state-box .icon { font-size: 36px; margin-bottom: 12px; }
         .state-box p { font-size: 14px; line-height: 1.6; }
         .loading-bar { height: 3px; background: var(--green); border-radius: 2px; width: 0%; transition: width 0.3s ease; margin-bottom: 16px; }
-
-        @keyframes fadeDown { from { opacity: 0; transform: translateY(-16px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .spinner { width: 18px; height: 18px; border: 2px solid #00000033; border-top-color: #000; border-radius: 50%; animation: spin 0.7s linear infinite; }
     </style>
 </head>
 <body>
-    <div class="container">
+<div class="container">
 
-        <div class="header">
-            <div class="badge">🇸🇦 السوق السعودي</div>
-            <h1>🖥️ ابحث عن <span>قطعتك</span></h1>
-            <p>رادارك الذكي لمقارنة أسعار قطع البي سي والشاشات في المتاجر المحلية</p>
-        </div>
-
-        <div id="recommendationBox" class="recommendation-box"></div>
-
-        <div class="card">
-            <div class="card-title">خيارات البحث المباشر</div>
-            <div class="search-wrap">
-                <span class="search-icon">🔍</span>
-                <input type="text" id="query" placeholder="مثال: RTX 4070، i5-13400F، شاشة OLED..." autocomplete="off">
-                <div id="suggestions" class="suggestions-list"></div>
-            </div>
-
-            <div id="historySection" style="display:none; margin-top: 10px;">
-                <div style="font-size:11px; color: var(--muted)">آخر عمليات البحث السريعة:</div>
-                <div class="history-container" id="historyContainer"></div>
-            </div>
-
-            <div style="margin-top:14px">
-                <div class="card-title" style="margin-bottom:10px">تصفية حسب المتجر</div>
-                <div class="filter-row" id="filterRow">
-                    <button class="filter-chip active" data-site="">كل المتاجر</button>
-                    <button class="filter-chip" data-site="extra.com">Extra</button>
-                    <button class="filter-chip" data-site="jarir.com">جرير</button>
-                    <button class="filter-chip" data-site="amazon.sa">أمازون</button>
-                    <button class="filter-chip" data-site="noon.com">نون</button>
-                    <button class="filter-chip" data-site="xcite.com">إكسايت</button>
-                </div>
-            </div>
-
-            <button class="btn-primary" id="searchBtn" onclick="performSearch()">
-                <span id="btnText">اعثر على أفضل سعر</span>
-                <span id="btnIcon">🔍</span>
-            </button>
-        </div>
-
-        <div class="card">
-            <div class="card-title">البحث بواسطة صورة القطعة (OCR)</div>
-            <div class="upload-area" onclick="document.getElementById('imageFile').click()">
-                <div class="icon">📷</div>
-                اضغط هنا لرفع صورة وسيتم استخراج اسم القطعة وتصنيفها تلقائياً
-                <input type="file" id="imageFile" accept="image/*" style="display:none">
-                <div id="status"></div>
-            </div>
-        </div>
-
-        <div id="categoryCard" class="category-badge"></div>
-
-        <div class="card">
-            <div class="card-title">نتائج البحث والأسعار التلقائية</div>
-            <div class="loading-bar" id="loadingBar"></div>
-            <div id="results">
-                <div class="state-box">
-                    <div class="icon">🖥️</div>
-                    <p>أدخل اسم القطعة أو الشاشة، وستظهر النتائج هنا فوراً</p>
-                </div>
-            </div>
-        </div>
-
+    <div class="header">
+        <div class="badge">🇸🇦 السوق السعودي</div>
+        <h1>🖥️ ابحث عن <span>قطعتك</span></h1>
+        <p>رادارك الذكي لمقارنة الأسعار وبناء تجميعات البي سي متكاملة</p>
     </div>
 
-    <script>
-        const pcPartsData = [
-            "i3-12100F", "i5-12400F", "i5-12600K", "i5-13400F", "i5-13600K",
-            "i7-12700K", "i7-13700K", "i7-14700K", "i9-13900K", "i9-14900K",
-            "Ryzen 5 5600", "Ryzen 5 5600X", "Ryzen 7 7800X3D",
-            "RTX 3060", "RTX 4060", "RTX 4070 Super", "RTX 4080 Super", "RTX 4090",
-            "شاشة OLED جيمنج", "شاشة Mini LED", "شاشة 4K 144Hz"
-        ];
+    <div id="recommendationBox" class="recommendation-box"></div>
 
-        const queryInput = document.getElementById('query');
-        const suggestionsDiv = document.getElementById('suggestions');
-        const categoryCard = document.getElementById('categoryCard');
-        const historyContainer = document.getElementById('historyContainer');
-        const historySection = document.getElementById('historySection');
-        const recommendationBox = document.getElementById('recommendationBox');
+    <div class="card">
+        <div class="card-title">البحث عن قطعة أو شاشة</div>
+        <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="query" placeholder="مثال: RTX 4070، i5-13400F، شاشة OLED..." autocomplete="off">
+            <div id="suggestions" class="suggestions-list"></div>
+        </div>
+        <div id="historySection" style="display:none; margin-top:10px;">
+            <div style="font-size:11px; color:var(--muted)">آخر عمليات البحث:</div>
+            <div class="history-container" id="historyContainer"></div>
+        </div>
+        <div style="margin-top:14px">
+            <div class="card-title" style="margin-bottom:10px">تصفية حسب المتجر</div>
+            <div class="filter-row" id="filterRow">
+                <button class="filter-chip active" data-site="">كل المتاجر</button>
+                <button class="filter-chip" data-site="extra.com">Extra</button>
+                <button class="filter-chip" data-site="jarir.com">جرير</button>
+                <button class="filter-chip" data-site="amazon.sa">أمازون</button>
+                <button class="filter-chip" data-site="noon.com">نون</button>
+                <button class="filter-chip" data-site="xcite.com">إكسايت</button>
+            </div>
+        </div>
+        <button class="btn-primary" id="searchBtn" onclick="performSearch()">
+            <span id="btnText">اعثر على أفضل سعر</span>
+            <span id="btnIcon">🔍</span>
+        </button>
+    </div>
 
-        function classifyText(text) {
-            const lowerText = text.toLowerCase().trim();
-            if (lowerText.includes('rtx') || lowerText.includes('gtx') || lowerText.includes('nvidia') || lowerText.includes('graphics') || lowerText.includes('radeon') || lowerText.includes('xt') || /\brx\s?\d{4}/.test(lowerText)) return "🎮 تصنيف القطعة: كرت شاشة (GPU)";
-            if (lowerText.includes('intel') || lowerText.includes('ryzen') || lowerText.includes('amd cpu') || /\bi[3579]-/.test(lowerText) || lowerText.includes('processor')) return "🧠 تصنيف القطعة: معالج (CPU)";
-            if (lowerText.includes('corsair') || lowerText.includes('ddr4') || lowerText.includes('ddr5') || lowerText.includes('ram ') || lowerText.includes('mhz')) return "⚡ تصنيف القطعة: ذاكرة عشوائية (RAM)";
-            if (lowerText.includes('ssd') || lowerText.includes('nvme') || lowerText.includes('samsung 9')) return "💾 تصنيف القطعة: وحدة تخزين (SSD / HDD)";
-            if (lowerText.includes('شاشة') || lowerText.includes('monitor') || lowerText.includes('oled') || lowerText.includes('hz')) return "📺 تصنيف القطعة: شاشة عرض (Monitor)";
-            return "📦 تصنيف القطعة: ملحقات / قطعة منوعة";
-        }
+    <div class="card">
+        <div class="card-title">🛠️ ابنِ تجميعتك</div>
+        <div id="activeBanner" class="active-slot-banner"></div>
+        <div class="builder-grid">
+            <div class="builder-row" id="row-cpu">
+                <div class="part-info"><span class="part-icon">🧠</span><div style="min-width:0"><div class="part-name">المعالج (CPU)</div><div class="part-selected" id="selected-cpu">لم يتم الاختيار</div></div></div>
+                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0"><span class="part-price" id="price-cpu" data-value="0">—</span><button class="btn-add-part" id="btn-cpu" onclick="prepareBuildSearch('CPU')">ابحث</button></div>
+            </div>
+            <div class="builder-row" id="row-gpu">
+                <div class="part-info"><span class="part-icon">🎮</span><div style="min-width:0"><div class="part-name">كرت الشاشة (GPU)</div><div class="part-selected" id="selected-gpu">لم يتم الاختيار</div></div></div>
+                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0"><span class="part-price" id="price-gpu" data-value="0">—</span><button class="btn-add-part" id="btn-gpu" onclick="prepareBuildSearch('GPU')">ابحث</button></div>
+            </div>
+            <div class="builder-row" id="row-mobo">
+                <div class="part-info"><span class="part-icon">🔌</span><div style="min-width:0"><div class="part-name">اللوحة الأم (Motherboard)</div><div class="part-selected" id="selected-mobo">لم يتم الاختيار</div></div></div>
+                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0"><span class="part-price" id="price-mobo" data-value="0">—</span><button class="btn-add-part" id="btn-mobo" onclick="prepareBuildSearch('Motherboard')">ابحث</button></div>
+            </div>
+            <div class="builder-row" id="row-ram">
+                <div class="part-info"><span class="part-icon">⚡</span><div style="min-width:0"><div class="part-name">الذاكرة العشوائية (RAM)</div><div class="part-selected" id="selected-ram">لم يتم الاختيار</div></div></div>
+                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0"><span class="part-price" id="price-ram" data-value="0">—</span><button class="btn-add-part" id="btn-ram" onclick="prepareBuildSearch('RAM')">ابحث</button></div>
+            </div>
+            <div class="builder-row" id="row-ssd">
+                <div class="part-info"><span class="part-icon">💾</span><div style="min-width:0"><div class="part-name">وحدة التخزين (SSD)</div><div class="part-selected" id="selected-ssd">لم يتم الاختيار</div></div></div>
+                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0"><span class="part-price" id="price-ssd" data-value="0">—</span><button class="btn-add-part" id="btn-ssd" onclick="prepareBuildSearch('SSD')">ابحث</button></div>
+            </div>
+            <div class="builder-row" id="row-psu">
+                <div class="part-info"><span class="part-icon">🔋</span><div style="min-width:0"><div class="part-name">مزود الطاقة (PSU)</div><div class="part-selected" id="selected-psu">لم يتم الاختيار</div></div></div>
+                <div style="display:flex;align-items:center;gap:10px;flex-shrink:0"><span class="part-price" id="price-psu" data-value="0">—</span><button class="btn-add-part" id="btn-psu" onclick="prepareBuildSearch('PSU')">ابحث</button></div>
+            </div>
+            <div class="total-box">
+                <span class="total-title">💰 التكلفة الإجمالية:</span>
+                <span class="total-price" id="total-build-price">0 ريال</span>
+            </div>
+        </div>
+        <button class="btn-analyze" id="analyzeBtn" onclick="analyzeBuild()" disabled>🔬 تحليل التوافق وأداء الألعاب</button>
+        <button class="btn-clear" onclick="clearBuild()">🗑️ مسح التجميعة</button>
+    </div>
 
-        // ====== هندسة النظام الذكي لفهم خيارات المستخدم (User Intent Logic) ======
-        function updateProfileAndRecommend(query) {
-            const lower = query.toLowerCase();
+    <div class="compat-card" id="compatCard">
+        <div class="compat-title">🔬 نتائج تحليل التوافق</div>
+        <div class="compat-list" id="compatList"></div>
+        <div class="compat-score">
+            <span class="score-label">تقييم التجميعة:</span>
+            <span class="score-badge" id="scoreBadge"></span>
+        </div>
+    </div>
+
+    <div class="games-card" id="gamesCard">
+        <div class="card-title">🎮 الأداء المتوقع في الألعاب</div>
+        <div class="games-grid" id="gamesGrid"></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">البحث بواسطة صورة القطعة (OCR)</div>
+        <div class="upload-area" onclick="document.getElementById('imageFile').click()">
+            <div class="icon">📷</div>
+            اضغط هنا لرفع صورة وسيتم استخراج اسم القطعة تلقائياً
+            <input type="file" id="imageFile" accept="image/*" style="display:none">
+            <div id="status"></div>
+        </div>
+    </div>
+
+    <div id="categoryCard" class="category-badge"></div>
+
+    <div class="card">
+        <div class="card-title">نتائج البحث</div>
+        <div class="loading-bar" id="loadingBar"></div>
+        <div id="results">
+            <div class="state-box">
+                <div class="icon">🖥️</div>
+                <p>ابحث عن أي قطعة أو اضغط "ابحث" من التجميعة وستظهر النتائج هنا</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script>
+// ====== بيانات القطع ======
+const pcPartsData = [
+    "i3-12100F","i5-12400F","i5-12600K","i5-13400F","i5-13600K",
+    "i7-12700K","i7-13700K","i7-14700K","i9-13900K","i9-14900K",
+    "Ryzen 5 5600","Ryzen 5 5600X","Ryzen 5 7600X",
+    "Ryzen 7 5700X","Ryzen 7 7700X","Ryzen 7 7800X3D",
+    "Ryzen 9 7900X","Ryzen 9 7950X",
+    "RTX 3060","RTX 3060 Ti","RTX 3070","RTX 3080",
+    "RTX 4060","RTX 4060 Ti","RTX 4070","RTX 4070 Super",
+    "RTX 4070 Ti","RTX 4080","RTX 4080 Super","RTX 4090",
+    "RX 6600","RX 6700 XT","RX 6800 XT","RX 7600","RX 7800 XT","RX 7900 XTX",
+    "شاشة OLED","شاشة 4K 144Hz","شاشة 2K 180Hz","شاشة Asus ROG","شاشة LG UltraGear",
+    "SSD 1TB NVMe","SSD 2TB Samsung 990 Pro","SSD WD Black 1TB",
+    "RAM 16GB DDR4","RAM 32GB DDR5","RAM 64GB DDR5",
+    "B650 motherboard","Z790 motherboard","B760 motherboard",
+    "Power Supply 750W","Power Supply 850W","AIO 360mm","Noctua NH-D15"
+];
+
+// ====== قواعد الأداء ======
+const gpuScore = {
+    'rtx 3060':4,'rtx 3060 ti':5,'rtx 3070':6,'rtx 3080':7,
+    'rtx 4060':4,'rtx 4060 ti':5,'rtx 4070':7,'rtx 4070 super':7,
+    'rtx 4070 ti':8,'rtx 4080':9,'rtx 4080 super':9,'rtx 4090':10,
+    'rx 6600':3,'rx 6700 xt':5,'rx 6800 xt':7,
+    'rx 7600':4,'rx 7800 xt':7,'rx 7900 xtx':9
+};
+const cpuScore = {
+    'i3-12100f':3,'i5-12400f':5,'i5-12600k':5,'i5-13400f':6,
+    'i5-13600k':7,'i7-12700k':7,'i7-13700k':8,'i7-14700k':8,
+    'i9-13900k':9,'i9-14900k':10,
+    'ryzen 5 5600':5,'ryzen 5 5600x':5,'ryzen 5 7600x':6,
+    'ryzen 7 5700x':6,'ryzen 7 7700x':7,'ryzen 7 7800x3d':10,
+    'ryzen 9 7900x':8,'ryzen 9 7950x':9
+};
+
+const popularGames = [
+    { name:"Cyberpunk 2077",     icon:"🌆", res:"1080p / Ultra",  fps:{10:165,9:140,8:120,7:90,6:65,5:50,4:38,3:28,2:20,1:15} },
+    { name:"GTA V",             icon:"🚗", res:"1080p / Ultra",  fps:{10:200,9:180,8:160,7:144,6:120,5:100,4:80,3:65,2:50,1:40} },
+    { name:"Fortnite",          icon:"🏆", res:"1080p / Epic",   fps:{10:240,9:210,8:190,7:165,6:144,5:120,4:100,3:80,2:60,1:45} },
+    { name:"Call of Duty Warzone",icon:"🎖️",res:"1080p / Ultra", fps:{10:240,9:200,8:175,7:155,6:130,5:110,4:90,3:70,2:55,1:40} },
+    { name:"Elden Ring",        icon:"⚔️", res:"1080p / Ultra",  fps:{10:165,9:150,8:130,7:110,6:90,5:75,4:60,3:50,2:40,1:30} },
+    { name:"Valorant",          icon:"🎯", res:"1080p / Ultra",  fps:{10:500,9:450,8:380,7:300,6:240,5:200,4:160,3:120,2:90,1:60} },
+    { name:"FC 25 (FIFA)",      icon:"⚽", res:"1080p / Ultra",  fps:{10:240,9:220,8:200,7:180,6:160,5:144,4:120,3:100,2:80,1:60} },
+    { name:"Hogwarts Legacy",   icon:"🧙", res:"1080p / Ultra",  fps:{10:165,9:140,8:115,7:90,6:70,5:55,4:42,3:32,2:24,1:18} },
+    { name:"Apex Legends",      icon:"🔫", res:"1080p / Ultra",  fps:{10:300,9:260,8:220,7:190,6:165,5:144,4:120,3:90,2:70,1:50} },
+    { name:"The Witcher 3 (RT)",icon:"🐺", res:"1080p / Ultra",  fps:{10:165,9:140,8:110,7:85,6:65,5:50,4:38,3:28,2:20,1:14} }
+];
+
+function getScore(map, text) {
+    const t = text.toLowerCase();
+    for (const [k, v] of Object.entries(map)) { if (t.includes(k)) return v; }
+    return 5;
+}
+function getFpsTier(fps) {
+    if (fps >= 200) return 'ultra';
+    if (fps >= 100) return 'high';
+    if (fps >= 60)  return 'mid';
+    return 'low';
+}
+function getFpsTierLabel(fps) {
+    if (fps >= 200) return '⚡ خارق';
+    if (fps >= 100) return '✅ ممتاز';
+    if (fps >= 60)  return '🆗 مقبول';
+    return '⚠️ ضعيف';
+}
+
+// ====== التوافق ======
+function checkCompatibility(build) {
+    const results = [];
+    const cpu  = (build.cpu  || '').toLowerCase();
+    const mobo = (build.mobo || '').toLowerCase();
+    const ram  = (build.ram  || '').toLowerCase();
+    const gpu  = (build.gpu  || '').toLowerCase();
+    const psu  = (build.psu  || '').toLowerCase();
+
+    if (cpu && mobo) {
+        const isIntel = /i[3579]|intel/.test(cpu);
+        const isAmd   = /ryzen|amd/.test(cpu);
+        const isIntelBoard = /z790|b760|z690|b660/.test(mobo);
+        const isAmdBoard   = /b650|x670|b550|x570/.test(mobo);
+        if      (isIntel && isIntelBoard) results.push({status:'ok',   msg:'✅ المعالج متوافق مع اللوحة الأم (Intel + Intel Socket)'});
+        else if (isAmd   && isAmdBoard)   results.push({status:'ok',   msg:'✅ المعالج متوافق مع اللوحة الأم (AMD + AMD Socket)'});
+        else if (isIntel && isAmdBoard)   results.push({status:'error',msg:'❌ تعارض! معالج Intel لا يعمل على لوحة AMD — غير اللوحة الأم'});
+        else if (isAmd   && isIntelBoard) results.push({status:'error',msg:'❌ تعارض! معالج AMD لا يعمل على لوحة Intel — غير اللوحة الأم'});
+        else results.push({status:'warn', msg:'⚠️ تأكد من توافق socket المعالج مع اللوحة الأم'});
+    }
+
+    if (ram && mobo) {
+        const isDDR5 = /ddr5/.test(ram);
+        const isDDR4 = /ddr4/.test(ram);
+        const isNew  = /b650|x670|z790/.test(mobo);
+        const isOld  = /b550|x570|b660|z690/.test(mobo);
+        if      (isDDR5 && isNew)  results.push({status:'ok',   msg:'✅ الذاكرة DDR5 متوافقة مع اللوحة الأم'});
+        else if (isDDR4 && isOld)  results.push({status:'ok',   msg:'✅ الذاكرة DDR4 متوافقة مع اللوحة الأم'});
+        else if (isDDR5 && isOld)  results.push({status:'error',msg:'❌ الذاكرة DDR5 لا تعمل على لوحات الجيل القديم — استخدم DDR4'});
+        else if (isDDR4 && isNew)  results.push({status:'warn', msg:'⚠️ بعض لوحات B650/Z790 تدعم DDR4 — راجع المواصفات'});
+    }
+
+    if (cpu && gpu) {
+        const cs = getScore(cpuScore, cpu);
+        const gs = getScore(gpuScore, gpu);
+        const diff = gs - cs;
+        if      (diff > 3)       results.push({status:'error',msg:'❌ عنق زجاجة شديد! الـ GPU أقوى بكثير من الـ CPU — الكرت لن يشتغل بكامل قوته'});
+        else if (diff > 1)       results.push({status:'warn', msg:'⚠️ عنق زجاجة خفيف — الـ GPU أقوى قليلاً من الـ CPU'});
+        else if (cs - gs > 3)    results.push({status:'warn', msg:'⚠️ الـ CPU أقوى بكثير من الـ GPU — المعالج غير مستغل'});
+        else                     results.push({status:'ok',   msg:'✅ توازن ممتاز بين الـ CPU والـ GPU — لا عنق زجاجة'});
+    }
+
+    if (psu && gpu) {
+        const watts   = parseInt(psu.match(/\d+/)?.[0]) || 0;
+        const isHigh  = /4090|4080|rx 7900/.test(gpu);
+        const isMid   = /4070|4060 ti|rx 7800|rx 6800/.test(gpu);
+        if      (isHigh && watts < 850) results.push({status:'error',msg:'❌ مزود الطاقة ضعيف لهذا الكرت — تحتاج 850W على الأقل'});
+        else if (isHigh && watts >= 850) results.push({status:'ok',  msg:'✅ مزود الطاقة كافٍ للكرت الراقي'});
+        else if (isMid  && watts < 650)  results.push({status:'warn',msg:'⚠️ يُنصح بـ 650W على الأقل لهذا الكرت'});
+        else if (watts >= 650)           results.push({status:'ok',  msg:'✅ مزود الطاقة مناسب للتجميعة'});
+    }
+
+    if (!results.length) results.push({status:'warn',msg:'⚠️ أضف المعالج والكرت واللوحة لتحليل التوافق'});
+    return results;
+}
+
+// ====== إدارة التجميعة ======
+const slotMap = {
+    'CPU':         {id:'cpu',  label:'المعالج (CPU)',          hint:'i5-13400F أو Ryzen 5 7600X'},
+    'GPU':         {id:'gpu',  label:'كرت الشاشة (GPU)',        hint:'RTX 4060 أو RX 7800 XT'},
+    'Motherboard': {id:'mobo', label:'اللوحة الأم',             hint:'B650 Motherboard أو Z790'},
+    'RAM':         {id:'ram',  label:'الذاكرة العشوائية (RAM)', hint:'RAM 32GB DDR5'},
+    'SSD':         {id:'ssd',  label:'وحدة التخزين (SSD)',      hint:'SSD 1TB NVMe'},
+    'PSU':         {id:'psu',  label:'مزود الطاقة (PSU)',       hint:'Power Supply 750W'}
+};
+
+let currentActivePartSlot = '';
+const buildData = {cpu:'',gpu:'',mobo:'',ram:'',ssd:'',psu:''};
+
+const queryInput     = document.getElementById('query');
+const suggestionsDiv = document.getElementById('suggestions');
+const categoryCard   = document.getElementById('categoryCard');
+const activeBanner   = document.getElementById('activeBanner');
+const analyzeBtn     = document.getElementById('analyzeBtn');
+
+function prepareBuildSearch(partType) {
+    if (currentActivePartSlot) {
+        document.getElementById(`row-${slotMap[currentActivePartSlot].id}`)?.classList.remove('active-slot');
+        const oldBtn = document.getElementById(`btn-${slotMap[currentActivePartSlot].id}`);
+        oldBtn?.classList.remove('searching');
+        oldBtn.innerText = buildData[slotMap[currentActivePartSlot].id] ? '✅ تم' : 'ابحث';
+    }
+    currentActivePartSlot = partType;
+    const slot = slotMap[partType];
+    document.getElementById(`row-${slot.id}`).classList.add('active-slot');
+    const btn = document.getElementById(`btn-${slot.id}`);
+    btn.classList.add('searching');
+    btn.innerText = '🔍 نشط';
+    activeBanner.style.display = 'block';
+    activeBanner.innerHTML = `🎯 تبحث الآن لـ <b>${slot.label}</b> — ابحث ثم اضغط "أضف للتجميعة"`;
+    queryInput.placeholder = `ابحث عن: ${slot.hint}`;
+    queryInput.focus();
+    queryInput.scrollIntoView({behavior:'smooth', block:'center'});
+}
+
+// دالة مصلحة: تأخذ العنوان الصريح والسعر الصريح الممرر من الواجهة
+function addPartToBuild(title, priceStr, btnEl) {
+    if (!currentActivePartSlot) { alert("اضغط على 'ابحث' بجانب القطعة أولاً"); return; }
+    const slot = slotMap[currentActivePartSlot];
+    buildData[slot.id] = title;
+    
+    document.getElementById(`selected-${slot.id}`).innerText = title;
+    document.getElementById(`selected-${slot.id}`).classList.add('chosen');
+    document.getElementById(`row-${slot.id}`).classList.add('has-part');
+    document.getElementById(`row-${slot.id}`).classList.remove('active-slot');
+    
+    const priceEl = document.getElementById(`price-${slot.id}`);
+    const numericPrice = parseInt(priceStr.replace(/[^\d]/g, '')) || 0;
+    
+    priceEl.innerText = numericPrice > 0 ? `${numericPrice.toLocaleString()} ريال` : 'غير محدد';
+    priceEl.dataset.value = numericPrice;
+    
+    if (btnEl) { 
+        btnEl.innerText = '✅ تمت الإضافة'; 
+        btnEl.classList.add('added'); 
+        btnEl.disabled = true; 
+    }
+    
+    document.getElementById(`btn-${slot.id}`).classList.remove('searching');
+    document.getElementById(`btn-${slot.id}`).innerText = '✅ تم';
+    activeBanner.style.display = 'none';
+    currentActivePartSlot = '';
+    
+    calculateTotal();
+    checkAnalyzeBtn();
+}
+
+function calculateTotal() {
+    let total = 0;
+    Object.values(slotMap).forEach(s => { total += parseInt(document.getElementById(`price-${s.id}`).dataset.value) || 0; });
+    document.getElementById('total-build-price').innerText = total > 0 ? `${total.toLocaleString()} ريال` : '0 ريال';
+}
+
+function checkAnalyzeBtn() {
+    analyzeBtn.disabled = Object.values(buildData).filter(v => v).length < 2;
+}
+
+// ====== التحليل ======
+function analyzeBuild() {
+    const compatCard = document.getElementById('compatCard');
+    const gamesCard  = document.getElementById('gamesCard');
+    const compatList = document.getElementById('compatList');
+    const gamesGrid  = document.getElementById('gamesGrid');
+
+    const results = checkCompatibility(buildData);
+    compatList.innerHTML = '';
+    let goodCount = 0, badCount = 0;
+    results.forEach(r => {
+        const div = document.createElement('div');
+        div.className = `compat-item ${r.status}`;
+        div.innerText = r.msg;
+        compatList.appendChild(div);
+        if (r.status === 'ok')    goodCount++;
+        if (r.status === 'error') badCount++;
+    });
+    const badge = document.getElementById('scoreBadge');
+    if      (badCount > 0)                  { badge.className = 'score-badge bad';   badge.innerText = '❌ تعارض — راجع التجميعة'; }
+    else if (goodCount === results.length)  { badge.className = 'score-badge great'; badge.innerText = '✅ تجميعة ممتازة!'; }
+    else                                    { badge.className = 'score-badge good';  badge.innerText = '⚠️ جيدة مع ملاحظات'; }
+    compatCard.style.display = 'block';
+
+    const gScore = getScore(gpuScore, buildData.gpu || '');
+    const cScore = getScore(cpuScore, buildData.cpu || '');
+    const tier   = Math.max(1, Math.min(10, Math.min(gScore, cScore + 2)));
+
+    gamesGrid.innerHTML = '';
+    popularGames.forEach(game => {
+        const fps     = Math.round(game.fps[tier] * (0.92 + Math.random() * 0.16));
+        const cls     = getFpsTier(fps);
+        const maxFps  = game.fps[10];
+        const barPct  = Math.min(100, Math.round((fps / maxFps) * 100));
+        const div     = document.createElement('div');
+        div.className = 'game-row';
+        div.innerHTML = `
+            <div class="game-header">
+                <div class="game-name">${game.icon} ${game.name} <span class="perf-tier ${cls}">${getFpsTierLabel(fps)}</span></div>
+                <span class="game-res">${game.res}</span>
+            </div>
+            <div class="fps-row">
+                <div class="fps-item">
+                    <div class="fps-label">FPS تجميعتك</div>
+                    <div class="fps-val ${cls}">${fps}</div>
+                    <div class="fps-bar ${cls}" style="width:${barPct}%"></div>
+                </div>
+                <div class="fps-item">
+                    <div class="fps-label">أقصى FPS ممكن</div>
+                    <div class="fps-val ultra">${maxFps}</div>
+                    <div class="fps-bar ultra" style="width:100%"></div>
+                </div>
+            </div>`;
+        gamesGrid.appendChild(div);
+    });
+    gamesCard.style.display = 'block';
+    compatCard.scrollIntoView({behavior:'smooth'});
+}
+
+function clearBuild() {
+    Object.keys(buildData).forEach(k => buildData[k] = '');
+    Object.values(slotMap).forEach(slot => {
+        document.getElementById(`selected-${slot.id}`).innerText = 'لم يتم الاختيار';
+        document.getElementById(`selected-${slot.id}`).classList.remove('chosen');
+        document.getElementById(`price-${slot.id}`).innerText = '—';
+        document.getElementById(`price-${slot.id}`).dataset.value = 0;
+        document.getElementById(`row-${slot.id}`).classList.remove('active-slot','has-part');
+        const btn = document.getElementById(`btn-${slot.id}`);
+        btn.classList.remove('searching');
+        btn.innerText = 'ابحث';
+        btn.disabled = false;
+    });
+    document.getElementById('total-build-price').innerText = '0 ريال';
+    document.getElementById('compatCard').style.display = 'none';
+    document.getElementById('gamesCard').style.display  = 'none';
+    activeBanner.style.display = 'none';
+    currentActivePartSlot = '';
+    analyzeBtn.disabled = true;
+}
+
+// ====== توصيات ======
+const recommendationBox = document.getElementById('recommendationBox');
+function updateProfileAndRecommend(query) {
+    const q = query.toLowerCase();
+    if (/4090|4080|i9|7800x3d/.test(q)) localStorage.setItem('user_tier','high-end');
+    else if (/4060|3060|i5|5600/.test(q)) localStorage.setItem('user_tier','budget');
+    const tier = localStorage.getItem('user_tier');
+    let msg = '';
+    if (tier === 'budget') {
+        if (/i5|i3/.test(q)) msg = "🎯 <b>اقتراح:</b> مع معالج اقتصادي، نقترح <b>RTX 4060</b> لتجنب عنق الزجاجة.";
+        else if (/4060/.test(q)) msg = "🎯 <b>اقتراح:</b> هذا الكرت ممتاز! يناسبه <b>i5-13400F</b>.";
+    } else if (tier === 'high-end') {
+        if (/i9|7800x3d/.test(q)) msg = "👑 <b>اقتراح:</b> هذا معالج خارق يستحق كرت قوي مثل <b>RTX 4080 Super</b> أو <b>RTX 4090</b>.";
+        else if (/4090/.test(q)) msg = "👑 <b>اقتراح:</b> الـ RTX 4090 يحتاج معالج خارق مثل <b>Ryzen 7 7800X3D</b> لأقصى أداء.";
+    }
+    recommendationBox.innerHTML = msg;
+    recommendationBox.style.display = msg ? 'block' : 'none';
+}
+
+// ====== سجل البحث ======
+const EXPIRY = 24*60*60*1000;
+function saveToHistory(kw) {
+    if (!kw) return;
+    let h = JSON.parse(localStorage.getItem('pc_search_history')) || [];
+    h = h.filter(i => i.text !== kw);
+    h.unshift({text:kw, timestamp:Date.now()});
+    if (h.length > 5) h.pop();
+    localStorage.setItem('pc_search_history', JSON.stringify(h));
+    renderHistory();
+}
+function renderHistory() {
+    let h = JSON.parse(localStorage.getItem('pc_search_history')) || [];
+    h = h.filter(i => Date.now() - i.timestamp < EXPIRY);
+    const hs = document.getElementById('historySection');
+    const hc = document.getElementById('historyContainer');
+    if (!h.length) { hs.style.display = 'none'; return; }
+    hc.innerHTML = '';
+    h.forEach(item => {
+        const chip = document.createElement('div');
+        chip.className = 'history-chip';
+        chip.innerHTML = `⏱ ${item.text}`;
+        chip.addEventListener('click', () => { queryInput.value = item.text; performSearch(); });
+        hc.appendChild(chip);
+    });
+    hs.style.display = 'block';
+}
+window.addEventListener('load', renderHistory);
+
+// ====== الاقتراحات ======
+queryInput.addEventListener('input', () => {
+    const val = queryInput.value.toLowerCase().trim();
+    suggestionsDiv.innerHTML = '';
+    if (!val || val.length < 2) { suggestionsDiv.style.display = 'none'; return; }
+    const filtered = pcPartsData.filter(p => p.toLowerCase().includes(val)).slice(0,8);
+    if (filtered.length) {
+        filtered.forEach(part => {
+            const item = document.createElement('div');
+            item.className = 'suggestion-item';
+            item.innerText = part;
+            item.addEventListener('click', () => { queryInput.value = part; suggestionsDiv.style.display = 'none'; performSearch(); });
+            suggestionsDiv.appendChild(item);
+        });
+        suggestionsDiv.style.display = 'block';
+    } else { suggestionsDiv.style.display = 'none'; }
+});
+queryInput.addEventListener('keydown', e => { if (e.key === 'Enter') { suggestionsDiv.style.display = 'none'; performSearch(); } });
+document.addEventListener('click', e => { if (e.target !== queryInput) suggestionsDiv.style.display = 'none'; });
+
+// ====== فلتر المتاجر ======
+let selectedSite = '';
+document.getElementById('filterRow').addEventListener('click', e => {
+    const chip = e.target.closest('.filter-chip');
+    if (!chip) return;
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    selectedSite = chip.dataset.site;
+});
+
+function setLoading(val) { document.getElementById('loadingBar').style.width = val + '%'; }
+
+// ====== البحث الجبار ======
+async function performSearch() {
+    const query = queryInput.value.trim();
+    const resDiv = document.getElementById('results');
+    const btn    = document.getElementById('searchBtn');
+    if (!query) return;
+
+    saveToHistory(query);
+    updateProfileAndRecommend(query);
+
+    btn.disabled = true;
+    document.getElementById('btnText').innerText = 'جاري البحث...';
+    document.getElementById('btnIcon').innerHTML = '<div class="spinner"></div>';
+    resDiv.innerHTML = '';
+    setLoading(30);
+
+    let searchQuery = `${query} سعر السعودية`;
+    if (selectedSite) searchQuery += ` site:${selectedSite}`;
+    else searchQuery += ' (extra.com OR jarir.com OR amazon.sa OR noon.com OR xcite.com)';
+
+    try {
+        setLoading(60);
+        const res = await fetch('/api/search', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({query: searchQuery})
+        });
+        if (!res.ok) throw new Error('خطأ في استجابة السيرفر');
+        const data = await res.json();
+        setLoading(100);
+        const items = data.results || [];
+
+        if (!items.length) {
+            resDiv.innerHTML = `<div class="state-box"><div class="icon">😔</div><p>ما لقينا نتائج لـ "${query}"<br>جرب كلمات أخرى أو غير الفلتر</p></div>`;
+        } else {
+            resDiv.innerHTML = currentActivePartSlot
+                ? `<div style="background:var(--green-dim);border:1px solid var(--green);color:var(--green);padding:10px 14px;border-radius:10px;font-size:13px;font-weight:600;margin-bottom:12px;text-align:center;">اضغط "أضف للتجميعة" على القطعة اللي تناسبك 👇</div>`
+                : '';
             
-            // تصنيف اهتمام المستخدم بناءً على قوّة القطعة السابقة
-            if (lower.includes('4090') || lower.includes('4080') || lower.includes('i9') || lower.includes('i7-14') || lower.includes('7800x3d') || lower.includes('oled')) {
-                localStorage.setItem('user_tier', 'high-end');
-            } else if (lower.includes('4060') || lower.includes('3060') || lower.includes('i5') || lower.includes('i3') || lower.includes('5600')) {
-                localStorage.setItem('user_tier', 'budget');
-            }
-            
-            checkRecommendations(lower);
-        }
+            items.forEach((item, i) => {
+                let domain = 'متجر سعودي';
+                try { domain = new URL(item.link).hostname.replace('www.',''); } catch(e){}
+                
+                // تنظيف العنوان الممرر للـ inline Javascript لعدم حدوث Syntax Error
+                const safeTitle = item.title.replace(/'/g, "\\'").replace(/"/g, '\\"');
+                const safePrice = item.price.replace(/'/g, "\\'").replace(/"/g, '\\"');
 
-        function checkRecommendations(currentQueryLower) {
-            const tier = localStorage.getItem('user_tier');
-            if (!tier) return;
-
-            // إذا كان يبحث الحين عن كرت أو معالج، نقترح القطعة المكملة بناءً على فئته
-            if (tier === 'budget') {
-                if (currentQueryLower.includes('i5') || currentQueryLower.includes('i3')) {
-                    recommendationBox.innerHTML = "🎯 <b>اقتراح ذكي:</b> بما أنك اخترت معالج اقتصادي، نقترح لك كروت مثل <b>RTX 4060</b> لتجنب عنق الزجاجة وتوفير ميزانيتك.";
-                    recommendationBox.style.display = 'block';
-                } else if (currentQueryLower.includes('4060') || currentQueryLower.includes('3060')) {
-                    recommendationBox.innerHTML = "🎯 <b>اقتراح ذكي:</b> هذا الكرت ممتاز جداً للتجميعات الاقتصادية! يناسبه معالج <b>i5-13400F</b> أو <b>Ryzen 5 5600</b>.";
-                    recommendationBox.style.display = 'block';
-                } else {
-                    recommendationBox.style.display = 'none';
-                }
-            } else if (tier === 'high-end') {
-                if (currentQueryLower.includes('i9') || currentQueryLower.includes('7800x3d')) {
-                    recommendationBox.innerHTML = "👑 <b>اقتراح التجميعات الراقية:</b> اخترت وحش معالجة! تجميعتك تستحق كرت قوي جداً مثل <b>RTX 4080 Super</b> أو <b>RTX 4090</b> وعش التجربة الكاملة.";
-                    recommendationBox.style.display = 'block';
-                } else if (currentQueryLower.includes('4090') || currentQueryLower.includes('4080')) {
-                    recommendationBox.innerHTML = "👑 <b>اقتراح التجميعات الراقية:</b> هذا الكرت الجبار يحتاج معالج خارق يشغله بكامل قوته مثل <b>Ryzen 7 7800X3D</b> أسرع معالج ألعاب في العالم!";
-                    recommendationBox.style.display = 'block';
-                } else {
-                    recommendationBox.style.display = 'none';
-                }
-            }
-        }
-
-        // ====== هندسة إدارة سجل البحث (History Logic) ======
-        const EXPIRY_TIME = 24 * 60 * 60 * 1000;
-
-        function saveToHistory(keyword) {
-            if (!keyword) return;
-            let searchHistory = JSON.parse(localStorage.getItem('pc_search_history')) || [];
-            searchHistory = searchHistory.filter(item => item.text !== keyword);
-            searchHistory.unshift({ text: keyword, timestamp: Date.now() });
-            if (searchHistory.length > 5) searchHistory.pop();
-            localStorage.setItem('pc_search_history', JSON.stringify(searchHistory));
-            renderHistory();
-        }
-
-        function renderHistory() {
-            let searchHistory = JSON.parse(localStorage.getItem('pc_search_history')) || [];
-            const now = Date.now();
-            searchHistory = searchHistory.filter(item => (now - item.timestamp) < EXPIRY_TIME);
-            localStorage.setItem('pc_search_history', JSON.stringify(searchHistory));
-
-            if (searchHistory.length === 0) { historySection.style.display = 'none'; return; }
-
-            historyContainer.innerHTML = '';
-            searchHistory.forEach(item => {
-                const chip = document.createElement('div');
-                chip.className = 'history-chip';
-                chip.innerHTML = `⏱ ${item.text}`;
-                chip.addEventListener('click', () => {
-                    queryInput.value = item.text;
-                    categoryCard.style.display = 'none';
-                    performSearch();
-                });
-                historyContainer.appendChild(chip);
-            });
-            historySection.style.display = 'block';
-        }
-
-        window.addEventListener('load', () => {
-            renderHistory();
-            // فحص التوصيات فور دخول الصفحة بناء على آخر عملية في الذاكرة
-            const lastSearch = JSON.parse(localStorage.getItem('pc_search_history'))?.[0]?.text || '';
-            if(lastSearch) checkRecommendations(lastSearch.toLowerCase());
-        });
-
-        queryInput.addEventListener('input', () => {
-            const val = queryInput.value.toLowerCase().trim();
-            suggestionsDiv.innerHTML = '';
-            if (!val || val.length < 2) { suggestionsDiv.style.display = 'none'; return; }
-            const filtered = pcPartsData.filter(p => p.toLowerCase().includes(val)).slice(0, 8);
-            if (filtered.length > 0) {
-                filtered.forEach(part => {
-                    const item = document.createElement('div'); item.className = 'suggestion-item'; item.innerText = part;
-                    item.addEventListener('click', () => { queryInput.value = part; suggestionsDiv.style.display = 'none'; categoryCard.style.display = 'none'; performSearch(); });
-                    suggestionsDiv.appendChild(item);
-                });
-                suggestionsDiv.style.display = 'block';
-            } else { suggestionsDiv.style.display = 'none'; }
-        });
-
-        queryInput.addEventListener('keydown', e => { if (e.key === 'Enter') { suggestionsDiv.style.display = 'none'; performSearch(); } });
-        document.addEventListener('click', e => { if (e.target !== queryInput) suggestionsDiv.style.display = 'none'; });
-
-        let selectedSite = '';
-        document.getElementById('filterRow').addEventListener('click', e => {
-            const chip = e.target.closest('.filter-chip'); if (!chip) return;
-            document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-            chip.classList.add('active'); selectedSite = chip.dataset.site;
-        });
-
-        function setLoading(val) { document.getElementById('loadingBar').style.width = val + '%'; }
-
-        async function performSearch() {
-            const query = queryInput.value.trim();
-            const resDiv = document.getElementById('results');
-            const btn = document.getElementById('searchBtn');
-            if (!query) return;
-
-            saveToHistory(query);
-            updateProfileAndRecommend(query); // تحديث البروفايل الذكي وعرض الاقتراحات المناسبة للمستخدم
-
-            btn.disabled = true;
-            document.getElementById('btnText').innerText = 'جاري البحث...';
-            document.getElementById('btnIcon').innerHTML = '<div class="spinner"></div>';
-            resDiv.innerHTML = '';
-            setLoading(30);
-
-            let searchQuery = `${query} سعر السعودية`;
-            if (selectedSite) searchQuery += ` site:${selectedSite}`;
-            else searchQuery += ' (extra.com OR jarir.com OR amazon.sa OR noon.com OR xcite.com)';
-
-            try {
-                setLoading(60);
-                const res = await fetch('/api/search', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ query: searchQuery })
-                });
-                if (!res.ok) throw new Error('حدث خطأ في استجابة السيرفر');
-                const data = await res.json();
-                setLoading(100);
-
-                const items = data.results || [];
-                if (items.length === 0) {
-                    resDiv.innerHTML = `<div class="state-box"><div class="icon">😔</div><p>ما لقينا نتائج لـ "${query}"<br>جرب كلمات أخرى أو غير الفلتر</p></div>`;
-                } else {
-                    resDiv.innerHTML = '';
-                    items.forEach((item, i) => {
-                        let domain = "متجر سعودي";
-                        try { domain = new URL(item.link).hostname.replace('www.', ''); } catch(e){}
-                        
-                        resDiv.innerHTML += `
-                            <div class="result-card" style="animation-delay:${i * 0.05}s">
-                                <div class="result-num">نتيجة ${i + 1}</div>
-                                <div class="result-title">${item.title}</div>
-                                <div class="result-snippet">${item.snippet || 'لا يوجد وصف'}</div>
-                                <div style="text-align: right; margin-top: 4px;">
-                                    <span class="price-tag">💰 السعر المتوقع: ${item.price}</span>
-                                </div>
-                                <div class="result-footer">
-                                    <span class="result-source">${domain}</span>
-                                    <a href="${item.link}" target="_blank" class="result-link">عرض السعر 🔗</a>
-                                </div>
-                            </div>`;
+                const div = document.createElement('div');
+                div.className = 'result-card';
+                div.style.animationDelay = `${i*0.05}s`;
+                div.innerHTML = `
+                    <div class="result-num">نتيجة ${i+1}</div>
+                    <div class="result-title">${item.title}</div>
+                    <div class="result-snippet">${item.snippet || 'لا يوجد وصف'}</div>
+                    <div style="text-align: right; margin-top: 4px;">
+                        <span class="price-tag">💰 السعر المتوقع: ${item.price}</span>
+                    </div>
+                    <div class="result-footer">
+                        <span class="result-source">${domain}</span>
+                        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+                            ${currentActivePartSlot ? `<button class="btn-add-to-build" id="addbtn-${i}">➕ أضف للتجميعة</button>` : ''}
+                            <a href="${item.link}" target="_blank" class="result-link">عرض السعر 🔗</a>
+                        </div>
+                    </div>`;
+                resDiv.appendChild(div);
+                
+                if (currentActivePartSlot) {
+                    div.querySelector(`#addbtn-${i}`).addEventListener('click', function() {
+                        addPartToBuild(safeTitle, safePrice, this);
                     });
                 }
-            } catch (err) {
-                resDiv.innerHTML = `<div class="state-box"><div class="icon">⚠️</div><p>خطأ: ${err.message}</p></div>`;
-            } finally {
-                btn.disabled = false; document.getElementById('btnText').innerText = 'اعثر على أفضل سعر'; document.getElementById('btnIcon').innerText = '🔍';
-                setTimeout(() => setLoading(0), 800);
-            }
+            });
         }
+    } catch(err) {
+        resDiv.innerHTML = `<div class="state-box"><div class="icon">⚠️</div><p>خطأ: ${err.message}</p></div>`;
+    } finally {
+        btn.disabled = false;
+        document.getElementById('btnText').innerText = 'اعثر على أفضل سعر';
+        document.getElementById('btnIcon').innerText = '🔍';
+        setTimeout(() => setLoading(0), 800);
+    }
+}
 
-        document.getElementById('imageFile').addEventListener('change', async (e) => {
-            const file = e.target.files[0]; if (!file) return;
-            document.getElementById('status').innerText = 'جاري تحليل الصورة واستخراج الكاتاغوري... ☕';
-            categoryCard.style.display = 'none';
-            try {
-                const { data: { text } } = await Tesseract.recognize(file, 'eng');
-                const cleanText = text.trim();
-                if (cleanText) {
-                    const finalQuery = cleanText.split('\n')[0];
-                    queryInput.value = finalQuery; 
-                    document.getElementById('status').innerText = '✅ تم قراءة الصورة بنجاح!';
-                    const categoryResult = classifyText(cleanText);
-                    categoryCard.innerText = categoryResult; categoryCard.style.display = 'block';
-                    performSearch();
-                } else { document.getElementById('status').innerText = '⚠️ لم يتم العثور على نص واضح.'; }
-            } catch { document.getElementById('status').innerText = '❌ فشل تحليل الصورة'; }
-        });
-    </script>
+// ====== OCR ======
+document.getElementById('imageFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    document.getElementById('status').innerText = 'جاري تحليل الصورة... ☕';
+    categoryCard.style.display = 'none';
+    try {
+        const {data:{text}} = await Tesseract.recognize(file,'eng');
+        const clean = text.trim();
+        if (clean) {
+            queryInput.value = clean.split('\n')[0];
+            document.getElementById('status').innerText = '✅ تم قراءة الصورة!';
+            performSearch();
+        } else {
+            document.getElementById('status').innerText = '⚠️ لم يتم العثور على نص.';
+        }
+    } catch { document.getElementById('status').innerText = '❌ فشل تحليل الصورة'; }
+});
+</script>
 </body>
 </html>
